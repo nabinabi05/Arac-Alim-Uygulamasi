@@ -10,9 +10,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.2.1
+  flutter_local_notifications: ^9.7.0
+  connectivity_plus: ^5.0.2
+  battery_plus: ^4.0.2
+  http: ^1.2.1
+  flutter_secure_storage: ^9.0.0
 
   # Core icon pack
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
 
   # State management
   flutter_riverpod: ^2.0.0

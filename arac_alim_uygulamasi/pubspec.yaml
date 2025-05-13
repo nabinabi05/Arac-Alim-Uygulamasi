@@ -1,10 +1,11 @@
-name: flutter_background_features
-description: A Flutter project demonstrating background task and broadcast receiver.
-publish_to: 'none'
+name: arac_alim_uygulamasi
+description: "Car listing & purchase app — UI branch"
+publish_to: 'none' # private package
+
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -16,15 +17,25 @@ dependencies:
   http: ^1.2.1
   flutter_secure_storage: ^9.0.0
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  # Core icon pack
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.2
   path_provider: ^2.1.2
 
+  # State management
+  flutter_riverpod: ^2.0.0
+
+  # SVG desteği
+  flutter_svg: ^1.1.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
+
+  # Wireframe varlıklarınız
+  assets:
+    - design/wireframes/

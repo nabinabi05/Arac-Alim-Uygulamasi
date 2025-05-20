@@ -10,13 +10,13 @@ class BatteryStateHandler {
 
       switch (state) {
         case BatteryState.charging:
-          message = "Cihaz þarj oluyor";
+          message = "Cihaz sarj oluyor";
           break;
         case BatteryState.full:
           message = "Batarya dolu";
           break;
         case BatteryState.discharging:
-          message = "Þarjdan çýkarýldý";
+          message = "Sarjdan cikarildi";
           break;
         default:
           message = "Batarya durumu bilinmiyor";

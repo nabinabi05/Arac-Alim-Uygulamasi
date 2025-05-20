@@ -9,8 +9,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FavoriteTracker.initializeNotifications();
-  runApp(AracAlimApp());
+  final isDark = await StorageService.getTheme();
+  final lang   = await StorageService.getLanguage();
+  runApp(MyApp(isDarkMode: isDark, languageCode: lang));
 }
 
 class AracAlimApp extends StatelessWidget {

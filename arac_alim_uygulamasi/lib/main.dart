@@ -4,7 +4,9 @@ import 'ui/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(AracAlimApp());
+  final isDark = await StorageService.getTheme();
+  final lang   = await StorageService.getLanguage();
+  runApp(MyApp(isDarkMode: isDark, languageCode: lang));
 }
 
 class AracAlimApp extends StatelessWidget {

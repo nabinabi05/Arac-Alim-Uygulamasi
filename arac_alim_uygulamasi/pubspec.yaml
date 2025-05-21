@@ -1,27 +1,54 @@
-name: flutter_background_features
-description: A Flutter project demonstrating background task and broadcast receiver.
-publish_to: 'none'
+name: arac_alim_uygulamasi
+description: "Car listing & purchase app — UI branch"
+publish_to: 'none' # private package
+
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^9.7.0
   connectivity_plus: ^5.0.2
-  battery_plus: ^4.0.2
-  http: ^1.2.1
-  flutter_secure_storage: ^9.0.0
+  
+  path_provider: ^2.1.2
+  sqflite: ^2.3.0
+  path: ^1.8.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  http: ^1.2.1
+  connectivity_plus: ^5.0.2
+  flutter_local_notifications: ^19.2.1
 
+  battery_plus: ^4.0.2
+  flutter_secure_storage: ^9.0.0
+
+  # Core icon pack
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.2
+
+  # State management
+  flutter_riverpod: ^2.0.0
+
+  # SVG desteği
+  flutter_svg: ^1.1.6
+
+  sensors_plus: ^2.0.0
+  location: ^4.4.0
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
+
+  # Wireframe varlıklarını

@@ -18,7 +18,7 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const pages = ['Anasayfa', 'Araçlar', 'Favoriler', 'Profil'];
+    const pages = ['Anasayfa', 'Araçlar', 'Profil'];
     final accountItems = isLoggedIn
       ? ['Profil', 'AddSale', 'Logout']
       : ['Login', 'SignUp'];

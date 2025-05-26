@@ -21,7 +21,7 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Sepet kaldırıldı
-    const pages = ['Anasayfa', 'Araçlar', 'Favoriler', 'Profil'];
+    const pages = ['Anasayfa', 'Araçlar', 'Profil'];
     final accountItems = isLoggedIn
       ? ['Profil', 'AddSale', 'Logout']
       : ['Login', 'SignUp'];

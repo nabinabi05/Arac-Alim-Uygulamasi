@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   timezone: ^0.8.0
-
+  workmanager: ^0.5.0
   connectivity_plus: ^5.0.2
   
   path_provider: ^2.1.2

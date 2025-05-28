@@ -1,60 +1,47 @@
+// File: lib/ui/screens/detail_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/car.dart';
+import 'screen_template.dart';
+
+typedef NavigateCallback = void Function(String);
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({Key? key}) : super(key: key);
+  final NavigateCallback onNavigate;
+  final String id;
+  final bool isLoggedIn;
+
+  const DetailScreen({Key? key, required this.onNavigate, required this.id, required this.isLoggedIn}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Navigator üzerinden gönderilen Car objesini al
-    final Car car = ModalRoute.of(context)!.settings.arguments as Car;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${car.brand} ${car.model}'),
-      ),
+    return AppScaffold(
+      title: 'Detay: $id',
+      onNavigate: onNavigate,
+      isLoggedIn: isLoggedIn,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Araç resmi placeholder
-            Container(
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.directions_car,
-                size: 100,
-                color: Colors.white70,
-              ),
-            ),
+            Text('Detaylar', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            Text('ID: $id', style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 24),
-            Text(
-              'Model: ${car.model}',
-              style: Theme.of(context).textTheme.subtitle1,
+            Text('Satıcı İletişim Bilgileri', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Row(
+              children: const [
+                Icon(Icons.phone, size: 20),
+                SizedBox(width: 8),
+                Text('+90 555 123 4567')
+              ],
             ),
             const SizedBox(height: 8),
-            Text(
-              'Marka: ${car.brand}',
-              style: Theme.of(context).textTheme.subtitle1,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Fiyat: ₺${car.price.toStringAsFixed(0)}',
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            const Spacer(),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Satın al veya favorilere ekle işlemi
-                },
-                child: const Text('Satın Al'),
-              ),
+            Row(
+              children: const [
+                Icon(Icons.email, size: 20),
+                SizedBox(width: 8),
+                Text('seller@example.com')
+              ],
             ),
           ],
         ),

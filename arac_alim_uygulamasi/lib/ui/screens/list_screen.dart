@@ -1,40 +1,112 @@
+// File: lib/ui/screens/list_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/car.dart';
-import '../../ui/widgets/car_card.dart';
 
+typedef NavigateCallback = void Function(String);
+
+/// Araçlar sayfası: Drawer içinden filtreler, ana alanda liste
 class ListScreen extends StatelessWidget {
-  const ListScreen({Key? key}) : super(key: key);
+  final NavigateCallback onNavigate;
+  final List<String> items;
+  final bool isLoggedIn;
 
-  // Placeholder mock data
-  static final List<Car> mockCars = [
-    Car(id: 1, brand: 'Toyota', model: 'Corolla', price: 15000),
-    Car(id: 2, brand: 'Honda', model: 'Civic', price: 18000),
-    Car(id: 3, brand: 'Ford', model: 'Focus', price: 17000),
-  ];
+  const ListScreen({
+    Key? key,
+    required this.onNavigate,
+    required this.items,
+    required this.isLoggedIn,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    const pages = ['Anasayfa', 'Araçlar', 'Profil'];
+    final accountItems = isLoggedIn
+      ? ['Profil', 'AddSale', 'Logout']
+      : ['Login', 'SignUp'];
+
+    // Filtre paneli içerikleri
+    final filterPanel = ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('Filtreler', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        TextField(
+          decoration: InputDecoration(
+            hintText: 'Araç adı ara...',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: ['Sedan', 'SUV', 'Hatchback']
+              .map((cat) => FilterChip(label: Text(cat), onSelected: (_) {}))
+              .toList(),
+        ),
+        const SizedBox(height: 16),
+        const Text('Renk', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: ['Kırmızı', 'Mavi', 'Siyah']
+              .map((color) => FilterChip(label: Text(color), onSelected: (_) {}))
+              .toList(),
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Araç Listesi'),
+        title: const Text('Araçlar'),
+        // Filtre drawer için özel buton
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        actions: [
+          // Sayfa navigasyonu
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.menu),
+            onSelected: onNavigate,
+            itemBuilder: (_) => pages
+                .map((p) => PopupMenuItem(value: p, child: Text(p)))
+                .toList(),
+          ),
+          // Hesap işlemleri
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.person),
+            onSelected: onNavigate,
+            itemBuilder: (_) => accountItems
+                .map((label) => PopupMenuItem(value: label, child: Text(label)))
+                .toList(),
+          ),
+        ],
       ),
-      body: ListView.builder(
+      drawer: Drawer(child: filterPanel),
+      body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: mockCars.length,
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const Divider(),
         itemBuilder: (context, index) {
-          final car = mockCars[index];
-          return CarCard(
-            car: car,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/details',
-                arguments: car,
-              );
-            },
+          final item = items[index];
+          return ListTile(
+            leading: const Icon(Icons.directions_car),
+            title: Text(item),
+            subtitle: const Text('Placeholder açıklama'),
+            onTap: () => onNavigate('Detail:$item'),
           );
         },
       ),
+      floatingActionButton: isLoggedIn
+          ? FloatingActionButton(
+              onPressed: () => onNavigate('AddSale'),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

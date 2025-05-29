@@ -1,23 +1,54 @@
+// File: lib/services/storage_service.dart
+
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Basit anahtar-değer tercihler (tema, dil, son giriş email’i) için servis.
 class StorageService {
-  static Future<void> saveTheme(bool isDarkMode) async {
+  static const _keyThemeMode = 'theme_mode';
+  static const _keyLocale = 'locale';
+  static const _keyLastLoginEmail = 'last_login_email';
+
+  /// Tema bilgisini saklar ('light' veya 'dark').
+  Future<void> setThemeMode(String mode) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDarkMode', isDarkMode);
+    await prefs.setString(_keyThemeMode, mode);
   }
 
-  static Future<bool> getTheme() async {
+  /// Saklı tema bilgisini döner, yoksa null.
+  Future<String?> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isDarkMode') ?? false;
+    return prefs.getString(_keyThemeMode);
   }
 
-  static Future<void> saveLanguage(String languageCode) async {
+  /// Dil tercihini saklar (örneğin 'en', 'tr').
+  Future<void> setLocale(String locale) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('languageCode', languageCode);
+    await prefs.setString(_keyLocale, locale);
   }
 
-  static Future<String> getLanguage() async {
+  /// Saklı dil tercihini döner, yoksa null.
+  Future<String?> getLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('languageCode') ?? 'tr';
+    return prefs.getString(_keyLocale);
+  }
+
+  /// Son başarılı giriş yapan kullanıcının email’ini saklar.
+  Future<void> setLastLoginEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastLoginEmail, email);
+  }
+
+  /// Saklı son giriş email’ini döner, yoksa null.
+  Future<String?> getLastLoginEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyLastLoginEmail);
+  }
+
+  /// Tüm saklamaları temizler (örneğin, logout sırasında).
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyThemeMode);
+    await prefs.remove(_keyLocale);
+    await prefs.remove(_keyLastLoginEmail);
   }
 }

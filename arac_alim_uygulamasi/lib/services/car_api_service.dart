@@ -1,43 +1,34 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'local_db_service.dart';
+import '../models/car.dart';
 
 class CarApiService {
-  static const String baseUrl = "https://your-api.com/api/cars/";
+  final _db = LocalDbService();
 
-  // Araçları listele (GET)
-  static Future<List<dynamic>> getCars() async {
-    final response = await http.get(Uri.parse(baseUrl));
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Araçlar alınamadı.");
-    }
+  /// Tüm araçları getir
+  Future<List<Car>> getCars() async {
+    return _db.getAllCars();
   }
 
-  // Yeni araç ekle (POST)
-  static Future<bool> addCar(Map<String, dynamic> carData) async {
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(carData),
-    );
-    return response.statusCode == 201;
+  /// Tek bir aracı getir
+  Future<Car?> getCar(int id) async {
+    return _db.getCarById(id);
   }
 
-  // Araç güncelle (PUT)
-  static Future<bool> updateCar(int id, Map<String, dynamic> carData) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl$id/"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(carData),
-    );
-    return response.statusCode == 200;
+  /// Yeni araç oluştur
+  Future<bool> createCar(Car car) async {
+    final newId = await _db.insertCar(car);
+    return newId > 0;
   }
 
-  // Araç sil (DELETE)
-  static Future<bool> deleteCar(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl$id/"));
-    return response.statusCode == 204;
+  /// Mevcut aracı güncelle
+  Future<bool> updateCar(Car car) async {
+    final count = await _db.updateCar(car);
+    return count > 0;
+  }
+
+  /// Aracı sil
+  Future<bool> deleteCar(int id) async {
+    final count = await _db.deleteCar(id);
+    return count > 0;
   }
 }

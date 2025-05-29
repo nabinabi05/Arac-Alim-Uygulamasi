@@ -33,7 +33,7 @@ class ListScreen extends StatelessWidget {
           }
           return ListView.builder(
             itemCount: cars.length,
-            itemBuilder: (_, i) {
+            itemBuilder: (ctx, i) {
               final c = cars[i];
               return ListTile(
                 title: Text('${c.brand} ${c.modelName}'),

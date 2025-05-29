@@ -1,66 +1,74 @@
-// File: lib/ui/screens/screen_template.dart
 import 'package:flutter/material.dart';
 
-typedef NavigateCallback = void Function(String);
+/// Signature for navigating between pages.
+typedef NavigateCallback = void Function(String page, [String id]);
 
-/// Ortak Scaffold: SEPET sayfası kaldırıldı (listeden çıkarıldı)
-class AppScaffold extends StatelessWidget {
-  final String title;
+/// A common Scaffold with drawer, AppBar and FAB.
+class ScreenTemplate extends StatelessWidget {
   final NavigateCallback onNavigate;
-  final Widget body;
   final bool isLoggedIn;
+  final Widget child;
 
-  const AppScaffold({
+  const ScreenTemplate({
     Key? key,
-    required this.title,
     required this.onNavigate,
-    required this.body,
     required this.isLoggedIn,
+    required this.child,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Sepet kaldırıldı
-    const pages = ['Anasayfa', 'Araçlar', 'Profil'];
-    final accountItems = isLoggedIn
-      ? ['Profil', 'AddSale', 'Logout']
-      : ['Login', 'SignUp'];
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.menu),
-            onSelected: onNavigate,
-            itemBuilder: (_) => pages.map(
-              (p) => PopupMenuItem(value: p, child: Text(p))
-            ).toList(),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.account_circle),
-            onSelected: onNavigate,
-            itemBuilder: (_) => accountItems.map(
-              (label) => PopupMenuItem(value: label, child: Text(_labelText(label)))
-            ).toList(),
-          ),
-        ],
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text('AraçAlım',
+                  style: Theme.of(context).textTheme.headlineSmall),
+            ),
+            ListTile(
+              title: const Text('Anasayfa'),
+              onTap: () => onNavigate('Home'),
+            ),
+            ListTile(
+              title: const Text('Araç Listesi'),
+              onTap: () => onNavigate('List'),
+            ),
+            ListTile(
+              title: const Text('İlan Ver'),
+              onTap: () => onNavigate('AddSale'),
+              enabled: isLoggedIn,
+            ),
+            if (isLoggedIn) ...[
+              ListTile(
+                title: const Text('Profil'),
+                onTap: () => onNavigate('Profile'),
+              ),
+              ListTile(
+                title: const Text('Çıkış Yap'),
+                onTap: () => onNavigate('Logout'),
+              ),
+            ] else ...[
+              ListTile(
+                title: const Text('Giriş Yap'),
+                onTap: () => onNavigate('Login'),
+              ),
+              ListTile(
+                title: const Text('Kayıt Ol'),
+                onTap: () => onNavigate('Signup'),
+              ),
+            ],
+          ],
+        ),
       ),
-      body: body,
-      floatingActionButton: isLoggedIn && title == 'Anasayfa'
+      appBar: AppBar(title: const Text('AraçAlım')),
+      body: child,
+      floatingActionButton: isLoggedIn
           ? FloatingActionButton(
               onPressed: () => onNavigate('AddSale'),
               child: const Icon(Icons.add),
             )
           : null,
     );
-  }
-
-  String _labelText(String key) {
-    switch (key) {
-      case 'AddSale': return 'Satışa Ekle';
-      case 'Logout': return 'Çıkış Yap';
-      default: return key;
-    }
   }
 }

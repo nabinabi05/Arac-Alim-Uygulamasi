@@ -1,50 +1,72 @@
-// File: lib/ui/screens/detail_screen.dart
 import 'package:flutter/material.dart';
+import '../../models/car.dart';
+import '../../services/car_repository.dart';
 import 'screen_template.dart';
-
-typedef NavigateCallback = void Function(String);
 
 class DetailScreen extends StatelessWidget {
   final NavigateCallback onNavigate;
-  final String id;
   final bool isLoggedIn;
+  final String id;
 
-  const DetailScreen({Key? key, required this.onNavigate, required this.id, required this.isLoggedIn}) : super(key: key);
+  const DetailScreen({
+    Key? key,
+    required this.onNavigate,
+    required this.isLoggedIn,
+    required this.id,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Detay: $id',
+    return ScreenTemplate(
       onNavigate: onNavigate,
       isLoggedIn: isLoggedIn,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Detaylar', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Text('ID: $id', style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 24),
-            Text('Satıcı İletişim Bilgileri', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Row(
-              children: const [
-                Icon(Icons.phone, size: 20),
-                SizedBox(width: 8),
-                Text('+90 555 123 4567')
+      child: FutureBuilder<List<Car>>(
+        future: CarRepository().getCars(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return Center(child: Text('Hata: ${snap.error}'));
+          }
+          final cars = snap.data ?? [];
+          final car = cars.firstWhere(
+            (c) => c.id.toString() == id,
+            orElse: () => Car(
+              id: int.tryParse(id) ?? 0,
+              brand: '',
+              modelName: '',
+              year: 0,
+              price: 0,
+              description: '',
+            ),
+          );
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${car.brand} ${car.modelName}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text('Yıl: ${car.year}'),
+                Text('Fiyat: ${car.price} TL'),
+                const SizedBox(height: 16),
+                const Text(
+                  'Açıklama:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(car.description),
               ],
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: const [
-                Icon(Icons.email, size: 20),
-                SizedBox(width: 8),
-                Text('seller@example.com')
-              ],
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

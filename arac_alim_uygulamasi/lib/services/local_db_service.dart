@@ -1,4 +1,5 @@
 // lib/services/db_helper.dart
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/user.dart';
@@ -8,53 +9,65 @@ import '../models/order.dart';
 class DBHelper {
   static Database? _db;
 
-  /// Veritabanı örneğini döner (singleton)
+  /// Singleton database instance
   static Future<Database> get db async {
     if (_db != null) return _db!;
-    _db = await initDb();
+    _db = await _initDb();
     return _db!;
   }
 
-  /// Veritabanını açar / oluşturur
-  static Future<Database> initDb() async {
+  /// Open or create the database
+  static Future<Database> _initDb() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'app_data.db');
-
     return await openDatabase(
       path,
       version: 1,
       onCreate: _onCreate,
-      // İleride versiyon arttığında migration için onUpgrade ekleyebilirsin
     );
   }
 
-  /// İlk seferde tablo yapısını kurar
+  /// Create all tables on first run
   static Future<void> _onCreate(Database db, int version) async {
+    // Users (with password for auth)
     await db.execute('''
-      CREATE TABLE users(
-        id    INTEGER PRIMARY KEY AUTOINCREMENT,
-        name  TEXT,
-        email TEXT
+      CREATE TABLE users (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT,
+        name     TEXT,
+        email    TEXT UNIQUE,
+        password TEXT
       )
     ''');
 
+    // Cars
     await db.execute('''
-      CREATE TABLE cars(
-        id     INTEGER PRIMARY KEY AUTOINCREMENT,
-        brand  TEXT,
-        model  TEXT,
-        price  REAL
+      CREATE TABLE cars (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        brand       TEXT,
+        modelName   TEXT,
+        year        INTEGER,
+        price       REAL,
+        description TEXT
       )
     ''');
 
+    // Orders
     await db.execute('''
-      CREATE TABLE orders(
+      CREATE TABLE orders (
         id      INTEGER PRIMARY KEY AUTOINCREMENT,
         userId  INTEGER,
         carId   INTEGER,
         date    TEXT,
         FOREIGN KEY(userId) REFERENCES users(id),
         FOREIGN KEY(carId)  REFERENCES cars(id)
+      )
+    ''');
+
+    // Session (single‐row table for current user)
+    await db.execute('''
+      CREATE TABLE session (
+        id       INTEGER PRIMARY KEY CHECK (id = 1),
+        user_id  INTEGER
       )
     ''');
   }
@@ -100,6 +113,16 @@ class DBHelper {
     return rows.map((r) => Car.fromMap(r)).toList();
   }
 
+  static Future<Car?> getCarById(int id) async {
+    final dbClient = await db;
+    final rows = await dbClient.query(
+      'cars',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return rows.isNotEmpty ? Car.fromMap(rows.first) : null;
+  }
+
   static Future<int> updateCar(Car c) async {
     final dbClient = await db;
     return dbClient.update(
@@ -141,5 +164,27 @@ class DBHelper {
   static Future<int> deleteOrder(int id) async {
     final dbClient = await db;
     return dbClient.delete('orders', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ─── SESSION ────────────────────────────────────────────────────────────────
+
+  /// Save the current logged-in user’s ID (overwrites previous)
+  static Future<void> saveSession(int userId) async {
+    final dbClient = await db;
+    await dbClient.delete('session');
+    await dbClient.insert('session', {'id': 1, 'user_id': userId});
+  }
+
+  /// Get the currently logged-in user’s ID, or null if none
+  static Future<int?> getSession() async {
+    final dbClient = await db;
+    final rows = await dbClient.query('session');
+    return rows.isNotEmpty ? rows.first['user_id'] as int : null;
+  }
+
+  /// Clear the session (logout)
+  static Future<void> clearSession() async {
+    final dbClient = await db;
+    await dbClient.delete('session');
   }
 }

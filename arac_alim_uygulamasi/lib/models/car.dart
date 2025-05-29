@@ -5,8 +5,8 @@ class Car {
   final int year;
   final double price;
   final String description;
-  final double? latitude;   // yeniler
-  final double? longitude;  // yeniler
+  final double? latitude;
+  final double? longitude;
 
   Car({
     required this.id,
@@ -40,4 +40,3 @@ class Car {
     'latitude': latitude,
     'longitude': longitude,
   };
-}

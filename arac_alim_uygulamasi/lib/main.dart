@@ -1,89 +1,101 @@
-// File: lib/main.dart
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'ui/screens/screen_template.dart';
-import 'ui/screens/home_screen.dart';
-import 'ui/screens/login_screen.dart';
-import 'ui/screens/signup_screen.dart';
-import 'ui/screens/add_sale_screen.dart';
-import 'ui/screens/list_screen.dart';
-import 'ui/screens/detail_screen.dart';
-import 'ui/screens/profile_screen.dart';
+import 'theme.dart';
+import 'constants.dart';
+import 'screens/home/home_screen.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const AracAlimApp());
+  await FavoriteTracker.initializeNotifications();
+  runApp(AracAlimApp());
 }
 
 class AracAlimApp extends StatelessWidget {
-  const AracAlimApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AraçAlım',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreenWrapper(),
+      title: AppConstants.appTitle,
+      theme: AppTheme.lightTheme,
+      home: HomeScreenWrapper(),
     );
   }
 }
 
 class HomeScreenWrapper extends StatefulWidget {
-  const HomeScreenWrapper({Key? key}) : super(key: key);
   @override
   _HomeScreenWrapperState createState() => _HomeScreenWrapperState();
 }
 
 class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
-  String _currentPage = 'Anasayfa';
-  String? _detailId;
-  bool _isLoggedIn = false;
+  final SystemEventWatcher _systemEventWatcher = SystemEventWatcher();
 
-  final vehicles  = ['Araba A', 'Araba B', 'Araba C'];
-  final favorites = ['Araba B'];
-
-  void _navigate(String page) {
-    if (page == 'Logout') {
-      setState(() {
-        _isLoggedIn = false;
-        _currentPage = 'Anasayfa';
-      });
-      return;
-    }
-    if (page == 'Login' || page == 'SignUp' || page == 'AddSale') {
-      setState(() => _currentPage = page);
-      return;
-    }
-    if (page.startsWith('Detail:')) {
-      _detailId = page.split(':').last;
-      setState(() => _currentPage = 'Detail');
-      return;
-    }
-    // Simulate login success when navigating from Login → AddSale
-    if (_currentPage == 'Login' && page == 'AddSale') {
-      _isLoggedIn = true;
-    }
-    setState(() => _currentPage = page);
+  @override
+  void initState() {
+    super.initState();
+    _systemEventWatcher.listenToEvents(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    switch (_currentPage) {
-      case 'Login':
-        return LoginScreen(onNavigate: _navigate, isLoggedIn: _isLoggedIn);
-      case 'SignUp':
-        return SignUpScreen(onNavigate: _navigate, isLoggedIn: _isLoggedIn);
-      case 'AddSale':
-        return AddSaleScreen(onNavigate: _navigate, isLoggedIn: _isLoggedIn);
-      case 'Araçlar':
-        return ListScreen(onNavigate: _navigate, items: vehicles, isLoggedIn: _isLoggedIn);
-      case 'Detail':
-        return DetailScreen(onNavigate: _navigate, id: _detailId!, isLoggedIn: _isLoggedIn);
-      case 'Profil':
-      case 'Favoriler': // both routes now go to the same ProfileScreen
-        return ProfileScreen(onNavigate: _navigate, isLoggedIn: _isLoggedIn, favorites: favorites);
-      case 'Anasayfa':
-      default:
-        return HomeScreen(onNavigate: _navigate, isLoggedIn: _isLoggedIn);
-    }
+    return HomeScreen();
+  }
+}
+
+class SystemEventWatcher {
+  final Connectivity _connectivity = Connectivity();
+  final Battery _battery = Battery();
+
+  void listenToEvents(BuildContext context) {
+    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+      final isConnected = result != ConnectivityResult.none;
+      _showSnackbar(context, isConnected ? "Bağlantı geldi" : "Bağlantı koptu");
+    });
+
+    _battery.batteryLevel.then((level) {
+      if (level < 20) {
+        _showSnackbar(context, "Batarya seviyesi düşük: %\$level");
+      }
+    });
+  }
+
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+}
+
+class FavoriteTracker {
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  static Future<void> initializeNotifications() async {
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+    );
+
+    await _notificationsPlugin.initialize(initSettings);
+  }
+
+  void checkForPriceChangeAndNotify() {
+    _notificationsPlugin.show(
+      0,
+      'Fiyat Değişikliği!',
+      'Favori ilandaki aracın fiyatı değişti.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'price_change_channel',
+          'Fiyat Değişikliği',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
   }
 }

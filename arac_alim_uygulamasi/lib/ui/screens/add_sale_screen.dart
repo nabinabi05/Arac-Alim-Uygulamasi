@@ -19,7 +19,7 @@ class AddSaleScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AddSaleScreenState createState() => _AddSaleScreenState();
+  State<AddSaleScreen> createState() => _AddSaleScreenState();
 }
 
 class _AddSaleScreenState extends State<AddSaleScreen> {
@@ -46,7 +46,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
 
     setState(() => _submitting = true);
 
-    // id=0 is a placeholder; your LocalDbService will assign the real AUTO_INCREMENT id
+    // id=0 is a placeholder; LocalDbService (via CarRepository) will assign the real id
     final car = Car(
       id: 0,
       brand: _brandCtrl.text.trim(),
@@ -61,7 +61,6 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
     setState(() => _submitting = false);
 
     if (success) {
-      // Go back to the list page
       widget.onNavigate('List');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

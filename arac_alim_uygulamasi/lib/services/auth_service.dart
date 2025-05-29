@@ -1,42 +1,34 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'local_db_service.dart';
 
 class AuthService {
-  static const String baseUrl = "https://your-api-url.com/api";
-  static const _storage = FlutterSecureStorage();
+  final _db = LocalDbService();
 
-  // Login işlemi
-  static Future<bool> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/token/"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await _storage.write(key: 'access', value: data['access']);
-      await _storage.write(key: 'refresh', value: data['refresh']);
-      return true;
-    } else {
-      return false;
+  /// Registers locally; throws if the user already exists.
+  Future<void> register(String email, String password) async {
+    final existing = await _db.getUser(email);
+    if (existing != null) {
+      throw Exception('User already exists');
     }
+    final id = await _db.createUser(email, password);
+    await _db.saveSession(id);
   }
 
-  // Logout işlemi
-  static Future<void> logout() async {
-    await _storage.deleteAll();
+  /// Logs in locally; throws on bad credentials.
+  Future<void> login(String email, String password) async {
+    final user = await _db.getUser(email);
+    if (user == null || user['password'] != password) {
+      throw Exception('Invalid email or password');
+    }
+    await _db.saveSession(user['id'] as int);
   }
 
-  // Token alma
-  static Future<String?> getToken() async {
-    return await _storage.read(key: 'access');
+  /// True if someone is “logged in” in our session table.
+  Future<bool> isLoggedIn() async {
+    return (await _db.getSession()) != null;
   }
 
-  // Giriş yapmış mı kontrolü
-  static Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null;
+  /// Clears the local session.
+  Future<void> logout() async {
+    await _db.clearSession();
   }
 }

@@ -1,14 +1,25 @@
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+/// Cihazın ağ bağlantısı ve gerçek internet erişimini kontrol eder.
 class ConnectivityService {
-  static Future<bool> isConnected() async {
-    var result = await Connectivity().checkConnectivity();
-    return result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
+  // Stream ile uygulama boyunca dinleyebilirsiniz:
+  Stream<bool> get onConnectionChange async* {
+    await for (final status in Connectivity().onConnectivityChanged) {
+      if (status == ConnectivityResult.none) {
+        yield false;
+      } else {
+        // Wi-Fi / Mobil ağ bağlı olabilir ama gerçek internet olmayabilir
+        yield await InternetConnectionChecker().hasConnection;
+      }
+    }
   }
-}
-static void listenConnectionChanges(Function(bool isConnected) onChange) {
-  Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-    bool isConnected = result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
-    onChange(isConnected);
-  });
+
+  /// Anlık olarak internet erişimi var mı?
+  Future<bool> get hasConnection async {
+    final status = await Connectivity().checkConnectivity();
+    if (status == ConnectivityResult.none) return false;
+    return await InternetConnectionChecker().hasConnection;
+  }
 }

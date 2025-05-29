@@ -1,91 +1,101 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'ui/screens/screen_template.dart';
-import 'ui/screens/home_screen.dart';
-import 'ui/screens/list_screen.dart';
-import 'ui/screens/add_sale_screen.dart';
-import 'ui/screens/detail_screen.dart';
-import 'ui/screens/profile_screen.dart';
-import 'ui/screens/login_screen.dart';
-import 'ui/screens/signup_screen.dart';
-import 'services/auth_provider.dart';
+import 'theme.dart';
+import 'constants.dart';
+import 'screens/home/home_screen.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: AracAlimApp()));
+  await FavoriteTracker.initializeNotifications();
+  runApp(AracAlimApp());
 }
 
 class AracAlimApp extends StatelessWidget {
-  const AracAlimApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AraçAlım',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreenWrapper(),
+      title: AppConstants.appTitle,
+      theme: AppTheme.lightTheme,
+      home: HomeScreenWrapper(),
     );
   }
 }
 
-class HomeScreenWrapper extends ConsumerStatefulWidget {
-  const HomeScreenWrapper({Key? key}) : super(key: key);
-
+class HomeScreenWrapper extends StatefulWidget {
   @override
-  ConsumerState<HomeScreenWrapper> createState() =>
-      _HomeScreenWrapperState();
+  _HomeScreenWrapperState createState() => _HomeScreenWrapperState();
 }
 
-class _HomeScreenWrapperState
-    extends ConsumerState<HomeScreenWrapper> {
-  String _currentPage = 'Home';
-  String _selectedId = '';
+class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
+  final SystemEventWatcher _systemEventWatcher = SystemEventWatcher();
 
-  void _navigate(String page, [String id = '']) {
-    if (page == 'Logout') {
-      ref.read(authProvider.notifier).logout();
-      page = 'Home';
-    }
-    setState(() {
-      _currentPage = page;
-      _selectedId = id;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _systemEventWatcher.listenToEvents(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final isLoggedIn =
-        authState.status == AuthStatus.authenticated;
+    return HomeScreen();
+  }
+}
 
-    switch (_currentPage) {
-      case 'Home':
-        return HomeScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      case 'List':
-        return ListScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      case 'AddSale':
-        return AddSaleScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      case 'Detail':
-        return DetailScreen(
-          onNavigate: _navigate,
-          isLoggedIn: isLoggedIn,
-          id: _selectedId,
-        );
-      case 'Profile':
-        return ProfileScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      case 'Login':
-        return LoginScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      case 'Signup':
-        return SignupScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-      default:
-        return HomeScreen(
-            onNavigate: _navigate, isLoggedIn: isLoggedIn);
-    }
+class SystemEventWatcher {
+  final Connectivity _connectivity = Connectivity();
+  final Battery _battery = Battery();
+
+  void listenToEvents(BuildContext context) {
+    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+      final isConnected = result != ConnectivityResult.none;
+      _showSnackbar(context, isConnected ? "Bağlantı geldi" : "Bağlantı koptu");
+    });
+
+    _battery.batteryLevel.then((level) {
+      if (level < 20) {
+        _showSnackbar(context, "Batarya seviyesi düşük: %\$level");
+      }
+    });
+  }
+
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+}
+
+class FavoriteTracker {
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  static Future<void> initializeNotifications() async {
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+    );
+
+    await _notificationsPlugin.initialize(initSettings);
+  }
+
+  void checkForPriceChangeAndNotify() {
+    _notificationsPlugin.show(
+      0,
+      'Fiyat Değişikliği!',
+      'Favori ilandaki aracın fiyatı değişti.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'price_change_channel',
+          'Fiyat Değişikliği',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
   }
 }

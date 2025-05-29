@@ -1,12 +1,10 @@
-// File: lib/ui/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_provider.dart';
 import 'screen_template.dart';
 
-typedef NavigateCallback = void Function(String);
-
-/// Profil ekranı: Favori araçlar ve parola değiştirme
-class ProfileScreen extends StatelessWidget {
-  final NavigateCallback onNavigate;
+class ProfileScreen extends ConsumerWidget {
+  final void Function(String) onNavigate;
   final bool isLoggedIn;
   final List<String> favorites;
 
@@ -18,60 +16,32 @@ class ProfileScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppScaffold(
       title: 'Profil',
       onNavigate: onNavigate,
       isLoggedIn: isLoggedIn,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Favori Araçlar', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            if (favorites.isEmpty)
-              const Text('Henüz favori eklemediniz.')
-            else
-              ...favorites.map((item) => ListTile(
-                    leading: const Icon(Icons.favorite, color: Colors.red),
-                    title: Text(item),
-                    onTap: () => onNavigate('Detail:$item'),
-                  )),
-            const Divider(),
-            const SizedBox(height: 16),
-            Text('Parola Değiştir', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Mevcut Şifre',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              obscureText: true,
+            const Text('Hoş geldiniz!'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                ref.read(authProvider.notifier).logout();
+                onNavigate('Login');
+              },
+              child: const Text('Çıkış Yap'),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Yeni Şifre',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Yeni Şifre (Tekrar)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Şifre güncelleme işlemi
-                },
-                child: const Text('Parolayı Güncelle'),
+            const SizedBox(height: 24),
+            const Text('Favoriler'),
+            const SizedBox(height: 8),
+            ...favorites.map(
+              (f) => ListTile(
+                leading: const Icon(Icons.favorite),
+                title: Text(f),
               ),
             ),
           ],

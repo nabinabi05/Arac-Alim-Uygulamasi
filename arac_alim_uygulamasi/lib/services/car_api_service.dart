@@ -1,43 +1,30 @@
+// File: lib/services/car_api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/car.dart';
+import 'auth_service.dart';
 
 class CarApiService {
-  static const String baseUrl = "https://your-api.com/api/cars/";
+  static const String baseUrl = "https://your-api-url.com/api/cars/";
 
-  // Araçları listele (GET)
-  static Future<List<dynamic>> getCars() async {
-    final response = await http.get(Uri.parse(baseUrl));
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Araçlar alınamadı.");
-    }
-  }
-
-  // Yeni araç ekle (POST)
-  static Future<bool> addCar(Map<String, dynamic> carData) async {
-    final response = await http.post(
+  /// Araç listesini Car modeline dönüştürüp döndürür
+  static Future<List<Car>> getCars() async {
+    final token = await AuthService.getToken();
+    final resp = await http.get(
       Uri.parse(baseUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(carData),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
     );
-    return response.statusCode == 201;
+    if (resp.statusCode == 200) {
+      final List data = jsonDecode(resp.body);
+      return data
+          .map((e) => Car.fromMap(e as Map<String, dynamic>))
+          .toList();
+    }
+    throw Exception("Araçlar alınamadı: ${resp.statusCode}");
   }
 
-  // Araç güncelle (PUT)
-  static Future<bool> updateCar(int id, Map<String, dynamic> carData) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl$id/"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(carData),
-    );
-    return response.statusCode == 200;
-  }
-
-  // Araç sil (DELETE)
-  static Future<bool> deleteCar(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl$id/"));
-    return response.statusCode == 204;
-  }
+  // addCar, updateCar, deleteCar… aynı şekilde header ekleyin
 }

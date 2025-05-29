@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   timezone: ^0.10.1
   
+  permission_handler: ^10.2.0
+  geolocator: ^9.0.2
   path_provider: ^2.1.2
   sqflite: ^2.3.0
   path: ^1.8.0

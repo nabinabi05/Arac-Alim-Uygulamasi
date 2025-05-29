@@ -1,62 +1,51 @@
-// File: lib/ui/screens/list_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/auth_provider.dart';
+import '../../models/car.dart';
+import '../../services/car_repository.dart';
 import 'screen_template.dart';
 
-class ListScreen extends ConsumerWidget {
-  final void Function(String) onNavigate;
-  final List<String> items;
+class ListScreen extends StatelessWidget {
+  final NavigateCallback onNavigate;
+  final bool isLoggedIn;
 
   const ListScreen({
     Key? key,
     required this.onNavigate,
-    required this.items,
+    required this.isLoggedIn,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final isLoggedIn = authState.status == AuthStatus.authenticated;
-
-    return AppScaffold(
-      title: 'Araçlar',
+  Widget build(BuildContext context) {
+    return ScreenTemplate(
       onNavigate: onNavigate,
       isLoggedIn: isLoggedIn,
-      body: Column(
-        children: [
-          // ► Filtre alanınız buraya
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                labelText: 'Araç Ara',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (q) {
-                // filtre mantığı
-              },
-            ),
-          ),
-
-          // ► Liste
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: items.length,
-              itemBuilder: (ctx, i) {
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.directions_car),
-                    title: Text(items[i]),
-                    onTap: () => onNavigate('Detail:$i'),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+      child: FutureBuilder<List<Car>>(
+        future: CarRepository().getCars(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(
+                child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return Center(
+                child: Text('Hata: ${snap.error}'));
+          }
+          final cars = snap.data ?? [];
+          if (cars.isEmpty) {
+            return const Center(child: Text('Henüz araç yok.'));
+          }
+          return ListView.builder(
+            itemCount: cars.length,
+            itemBuilder: (ctx, i) {
+              final c = cars[i];
+              return ListTile(
+                title: Text('${c.brand} ${c.modelName}'),
+                subtitle: Text('${c.year} — ${c.price} TL'),
+                onTap: () =>
+                    onNavigate('Detail', c.id.toString()),
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -1,6 +1,8 @@
+// File: android/app/build.gradle.kts
+
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    kotlin("android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -8,6 +10,14 @@ android {
     namespace = "com.example.arac_alim_uygulamasi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
+
+    defaultConfig {
+        applicationId = "com.example.arac_alim_uygulamasi"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -17,14 +27,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
-    }
-
-    defaultConfig {
-        applicationId = "com.example.arac_alim_uygulamasi"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
     }
 
     buildTypes {
@@ -39,8 +41,10 @@ flutter {
 }
 
 dependencies {
-    // Desugaring için gereken kütüphane
-    add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.1.5")
+    // core library desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // Diğer Flutter pluginleri zaten 'dev.flutter.flutter-gradle-plugin' tarafından eklenir.
+    // Firebase Auth
+    implementation("com.google.firebase:firebase-auth-ktx:22.0.0")
+    // (and any other dependencies you had)
 }

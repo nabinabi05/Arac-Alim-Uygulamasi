@@ -1,140 +1,68 @@
-// File: lib/ui/screens/screen_template.dart
 import 'package:flutter/material.dart';
 
-typedef NavigateCallback = void Function(String);
+/// Signature for navigating between pages.
+typedef NavigateCallback = void Function(String page, [String id]);
 
-class AppScaffold extends StatelessWidget {
-  final String title;
+/// A common Scaffold with drawer, AppBar and FAB.
+class ScreenTemplate extends StatelessWidget {
   final NavigateCallback onNavigate;
-  final Widget body;
   final bool isLoggedIn;
+  final Widget child;
 
-  const AppScaffold({
+  const ScreenTemplate({
     Key? key,
-    required this.title,
     required this.onNavigate,
-    required this.body,
     required this.isLoggedIn,
+    required this.child,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          // Profil / Logout veya Login / Signup butonları
-          if (isLoggedIn) ...[
-            IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () => onNavigate('Profil'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => onNavigate('Logout'),
-            ),
-          ] else ...[
-            TextButton(
-              onPressed: () => onNavigate('Login'),
-              child: const Text('Giriş', style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              onPressed: () => onNavigate('SignUp'),
-              child: const Text('Kayıt', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-
-          // Menü ikonu en sağda
-          Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-            ),
-          ),
-        ],
-      ),
-
-      // Sağdan kayan menü: giriş durumuna göre seçenekler
-      endDrawer: Drawer(
+      drawer: Drawer(
         child: ListView(
-          padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: const Text(
-                'AraçAlım',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-
-            // Her zaman
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Ana Sayfa'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigate('Anasayfa');
-              },
+              child: Text('AraçAlım',
+                  style: Theme.of(context).textTheme.headlineSmall),
             ),
             ListTile(
-              leading: const Icon(Icons.directions_car),
-              title: const Text('Araçlar'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigate('Araçlar');
-              },
+              title: const Text('Anasayfa'),
+              onTap: () => onNavigate('Home'),
             ),
-
-            const Divider(),
-
-            // Girişli değilse login/signup
-            if (!isLoggedIn) ...[
+            ListTile(
+              title: const Text('Araç Listesi'),
+              onTap: () => onNavigate('List'),
+            ),
+            ListTile(
+              title: const Text('İlan Ver'),
+              onTap: () => onNavigate('AddSale'),
+              enabled: isLoggedIn,
+            ),
+            if (isLoggedIn) ...[
               ListTile(
-                leading: const Icon(Icons.login),
-                title: const Text('Giriş Yap'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onNavigate('Login');
-                },
+                title: const Text('Profil'),
+                onTap: () => onNavigate('Profile'),
               ),
               ListTile(
-                leading: const Icon(Icons.app_registration),
-                title: const Text('Kayıt Ol'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onNavigate('SignUp');
-                },
+                title: const Text('Çıkış Yap'),
+                onTap: () => onNavigate('Logout'),
               ),
             ] else ...[
-              // Girişliyse profil
               ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Profil'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onNavigate('Profil');
-                },
+                title: const Text('Giriş Yap'),
+                onTap: () => onNavigate('Login'),
               ),
-            ],
-
-            // Yalnızca girişliler için
-            if (isLoggedIn) ...[
-              const Divider(),
               ListTile(
-                leading: const Icon(Icons.add_box),
-                title: const Text('İlan Ver'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onNavigate('AddSale');
-                },
+                title: const Text('Kayıt Ol'),
+                onTap: () => onNavigate('Signup'),
               ),
             ],
           ],
         ),
       ),
-
-      body: body,
-
+      appBar: AppBar(title: const Text('AraçAlım')),
+      body: child,
       floatingActionButton: isLoggedIn
           ? FloatingActionButton(
               onPressed: () => onNavigate('AddSale'),

@@ -1,45 +1,34 @@
-// File: lib/services/auth_service.dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'local_db_service.dart';
 
 class AuthService {
-  static const String baseUrl = "https://your-api-url.com/api";
-  static const _storage = FlutterSecureStorage();
-  static const _tokenKey = 'access';
+  final _db = LocalDbService();
 
-  /// Login işlemi: access token saklanır
-  static Future<bool> login(String email, String password) async {
-    final resp = await http.post(
-      Uri.parse("$baseUrl/token/"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    if (resp.statusCode == 200) {
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      await _storage.write(key: _tokenKey, value: data['access']);
-      return true;
+  /// Registers locally; throws if the user already exists.
+  Future<void> register(String email, String password) async {
+    final existing = await _db.getUser(email);
+    if (existing != null) {
+      throw Exception('User already exists');
     }
-    return false;
+    final id = await _db.createUser(email, password);
+    await _db.saveSession(id);
   }
 
-  /// Kayıt
-  static Future<bool> register(String email, String password) async {
-    final resp = await http.post(
-      Uri.parse("$baseUrl/register/"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    return resp.statusCode == 201;
+  /// Logs in locally; throws on bad credentials.
+  Future<void> login(String email, String password) async {
+    final user = await _db.getUser(email);
+    if (user == null || user['password'] != password) {
+      throw Exception('Invalid email or password');
+    }
+    await _db.saveSession(user['id'] as int);
   }
 
-  /// Mevcut token’ı okur
-  static Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+  /// True if someone is “logged in” in our session table.
+  Future<bool> isLoggedIn() async {
+    return (await _db.getSession()) != null;
   }
 
-  /// Logout: tüm anahtarları siler
-  static Future<void> logout() async {
-    await _storage.delete(key: _tokenKey);
+  /// Clears the local session.
+  Future<void> logout() async {
+    await _db.clearSession();
   }
 }

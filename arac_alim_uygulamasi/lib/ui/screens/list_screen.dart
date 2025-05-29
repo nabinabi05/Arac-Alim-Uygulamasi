@@ -22,12 +22,10 @@ class ListScreen extends StatelessWidget {
         future: CarRepository().getCars(),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (snap.hasError) {
-            return Center(
-                child: Text('Hata: ${snap.error}'));
+            return Center(child: Text('Hata: ${snap.error}'));
           }
           final cars = snap.data ?? [];
           if (cars.isEmpty) {
@@ -40,8 +38,7 @@ class ListScreen extends StatelessWidget {
               return ListTile(
                 title: Text('${c.brand} ${c.modelName}'),
                 subtitle: Text('${c.year} — ${c.price} TL'),
-                onTap: () =>
-                    onNavigate('Detail', c.id.toString()),
+                onTap: () => onNavigate('Detail', c.id.toString()),
               );
             },
           );

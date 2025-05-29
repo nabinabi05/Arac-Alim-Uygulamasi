@@ -11,6 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Sensor & Permissions
+  permission_handler: ^10.2.0
+  geolocator: ^9.0.2
+
   # Connectivity & Network Checking
   connectivity_plus: ^6.1.4
   internet_connection_checker: ^3.0.1

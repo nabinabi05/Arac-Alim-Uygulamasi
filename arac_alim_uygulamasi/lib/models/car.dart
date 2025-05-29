@@ -5,6 +5,8 @@ class Car {
   final int year;
   final double price;
   final String description;
+  final double? latitude;
+  final double? longitude;
 
   Car({
     required this.id,
@@ -13,34 +15,28 @@ class Car {
     required this.year,
     required this.price,
     required this.description,
+    this.latitude,
+    this.longitude,
   });
 
-  factory Car.fromJson(Map<String, dynamic> json) => Car(
-        id: json['id'] as int,
-        brand: json['brand'] as String,
-        modelName: json['model_name'] as String,
-        year: json['year'] as int,
-        price: (json['price'] as num).toDouble(),
-        description: json['description'] as String? ?? '',
-      );
+  factory Car.fromMap(Map<String, dynamic> m) => Car(
+    id: m['id'] as int,
+    brand: m['brand'] as String,
+    modelName: m['modelName'] as String,
+    year: m['year'] as int,
+    price: (m['price'] as num).toDouble(),
+    description: m['description'] as String,
+    latitude: m['latitude'] != null ? (m['latitude'] as num).toDouble() : null,
+    longitude: m['longitude'] != null ? (m['longitude'] as num).toDouble() : null,
+  );
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'brand': brand,
-      'model_name': modelName,
-      'year': year,
-      'price': price,
-      'description': description,
-    };
-  }
-
-  factory Car.fromMap(Map<String, dynamic> map) => Car(
-        id: map['id'] as int,
-        brand: map['brand'] as String,
-        modelName: map['model_name'] as String,
-        year: map['year'] as int,
-        price: (map['price'] as num).toDouble(),
-        description: map['description'] as String? ?? '',
-      );
-}
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'brand': brand,
+    'modelName': modelName,
+    'year': year,
+    'price': price,
+    'description': description,
+    'latitude': latitude,
+    'longitude': longitude,
+  };

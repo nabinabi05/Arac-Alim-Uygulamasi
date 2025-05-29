@@ -1,7 +1,12 @@
+// File: lib/ui/screens/add_sale_screen.dart
+
 import 'package:flutter/material.dart';
 import '../../models/car.dart';
 import '../../services/car_repository.dart';
 import 'screen_template.dart';
+
+/// Signature for navigating between pages.
+typedef NavigateCallback = void Function(String page, [String id]);
 
 class AddSaleScreen extends StatefulWidget {
   final NavigateCallback onNavigate;
@@ -24,6 +29,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
   final _yearCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -38,18 +44,23 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Note: id=0 is a placeholder; sqflite will assign the real AUTO_INCREMENT id
+    setState(() => _submitting = true);
+
+    // id=0 is a placeholder; LocalDbService (via CarRepository) will assign the real id
     final car = Car(
       id: 0,
-      brand: _brandCtrl.text,
-      modelName: _modelCtrl.text,
-      year: int.tryParse(_yearCtrl.text) ?? 0,
-      price: double.tryParse(_priceCtrl.text) ?? 0,
-      description: _descCtrl.text,
+      brand: _brandCtrl.text.trim(),
+      modelName: _modelCtrl.text.trim(),
+      year: int.parse(_yearCtrl.text.trim()),
+      price: double.parse(_priceCtrl.text.trim()),
+      description: _descCtrl.text.trim(),
     );
 
-    final ok = await CarRepository().addCar(car);
-    if (ok) {
+    final success = await CarRepository().addCar(car);
+
+    setState(() => _submitting = false);
+
+    if (success) {
       widget.onNavigate('List');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,42 +80,91 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
           key: _formKey,
           child: ListView(
             children: [
+              // Marka
               TextFormField(
                 controller: _brandCtrl,
-                decoration: const InputDecoration(labelText: 'Marka'),
+                decoration: const InputDecoration(
+                  labelText: 'Marka',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Zorunlu alan' : null,
+                    v == null || v.trim().isEmpty ? 'Marka girin' : null,
               ),
+              const SizedBox(height: 16),
+
+              // Model
               TextFormField(
                 controller: _modelCtrl,
-                decoration: const InputDecoration(labelText: 'Model'),
+                decoration: const InputDecoration(
+                  labelText: 'Model',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Zorunlu alan' : null,
+                    v == null || v.trim().isEmpty ? 'Model girin' : null,
               ),
+              const SizedBox(height: 16),
+
+              // Yıl
               TextFormField(
                 controller: _yearCtrl,
-                decoration: const InputDecoration(labelText: 'Yıl'),
+                decoration: const InputDecoration(
+                  labelText: 'Yıl',
+                  border: OutlineInputBorder(),
+                ),
                 keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || int.tryParse(v) == null ? 'Geçerli yıl girin' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Yıl girin';
+                  }
+                  final y = int.tryParse(v.trim());
+                  if (y == null || y < 1900 || y > DateTime.now().year) {
+                    return 'Geçerli yıl girin';
+                  }
+                  return null;
+                },
               ),
+              const SizedBox(height: 16),
+
+              // Fiyat
               TextFormField(
                 controller: _priceCtrl,
-                decoration: const InputDecoration(labelText: 'Fiyat (TL)'),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Geçerli fiyat girin' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Fiyat (TL)',
+                  prefixText: '₺ ',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Fiyat girin';
+                  }
+                  final p = double.tryParse(v.trim());
+                  if (p == null || p <= 0) {
+                    return 'Geçerli fiyat girin';
+                  }
+                  return null;
+                },
               ),
+              const SizedBox(height: 16),
+
+              // Açıklama
               TextFormField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(labelText: 'Açıklama'),
+                decoration: const InputDecoration(
+                  labelText: 'Açıklama',
+                  border: OutlineInputBorder(),
+                ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Ekle'),
-              ),
+              const SizedBox(height: 24),
+
+              // Submit butonu
+              _submitting
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      child: const Text('Araç Ekle'),
+                    ),
             ],
           ),
         ),

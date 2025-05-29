@@ -1,16 +1,17 @@
-class User {
-  int? id;
-  String name;
-  String email;
+// File: lib/models/user.dart
+class AuthUser {
+  final int id;
+  final String email;
 
-  User({this.id, required this.name, required this.email});
+  AuthUser({required this.id, required this.email});
 
-  factory User.fromMap(Map<String, dynamic> m) =>
-    User(id: m['id'], name: m['name'], email: m['email']);
+  factory AuthUser.fromMap(Map<String, dynamic> map) => AuthUser(
+        id: map['id'] as int,
+        email: map['email'] as String,
+      );
 
   Map<String, dynamic> toMap() => {
-    if (id != null) 'id': id,
-    'name': name,
-    'email': email,
-  };
+        'id': id,
+        'email': email,
+      };
 }

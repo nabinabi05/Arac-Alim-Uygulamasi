@@ -1,51 +1,34 @@
-// File: lib/ui/screens/detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_provider.dart';
 import 'screen_template.dart';
 
-typedef NavigateCallback = void Function(String);
-
-class DetailScreen extends StatelessWidget {
-  final NavigateCallback onNavigate;
+class DetailScreen extends ConsumerWidget {
+  final void Function(String) onNavigate;
   final String id;
   final bool isLoggedIn;
 
-  const DetailScreen({Key? key, required this.onNavigate, required this.id, required this.isLoggedIn}) : super(key: key);
+  const DetailScreen({
+    Key? key,
+    required this.onNavigate,
+    required this.id,
+    required this.isLoggedIn,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    if (authState.status != AuthStatus.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onNavigate('Login'));
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     return AppScaffold(
-      title: 'Detay: $id',
+      title: 'İlan Detayı',
       onNavigate: onNavigate,
       isLoggedIn: isLoggedIn,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Detaylar', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Text('ID: $id', style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 24),
-            Text('Satıcı İletişim Bilgileri', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Row(
-              children: const [
-                Icon(Icons.phone, size: 20),
-                SizedBox(width: 8),
-                Text('+90 555 123 4567')
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: const [
-                Icon(Icons.email, size: 20),
-                SizedBox(width: 8),
-                Text('seller@example.com')
-              ],
-            ),
-          ],
-        ),
-      ),
+      body: Center(child: Text('Detaylar: $id')),
     );
   }
 }

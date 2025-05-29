@@ -1,3 +1,4 @@
+// File: lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -5,38 +6,40 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class AuthService {
   static const String baseUrl = "https://your-api-url.com/api";
   static const _storage = FlutterSecureStorage();
+  static const _tokenKey = 'access';
 
-  // Login işlemi
+  /// Login işlemi: access token saklanır
   static Future<bool> login(String email, String password) async {
-    final response = await http.post(
+    final resp = await http.post(
       Uri.parse("$baseUrl/token/"),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await _storage.write(key: 'access', value: data['access']);
-      await _storage.write(key: 'refresh', value: data['refresh']);
+    if (resp.statusCode == 200) {
+      final data = jsonDecode(resp.body) as Map<String, dynamic>;
+      await _storage.write(key: _tokenKey, value: data['access']);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
-  // Logout işlemi
-  static Future<void> logout() async {
-    await _storage.deleteAll();
+  /// Kayıt
+  static Future<bool> register(String email, String password) async {
+    final resp = await http.post(
+      Uri.parse("$baseUrl/register/"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    return resp.statusCode == 201;
   }
 
-  // Token alma
+  /// Mevcut token’ı okur
   static Future<String?> getToken() async {
-    return await _storage.read(key: 'access');
+    return await _storage.read(key: _tokenKey);
   }
 
-  // Giriş yapmış mı kontrolü
-  static Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null;
+  /// Logout: tüm anahtarları siler
+  static Future<void> logout() async {
+    await _storage.delete(key: _tokenKey);
   }
 }

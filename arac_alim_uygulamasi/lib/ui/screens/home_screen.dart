@@ -6,7 +6,11 @@ class HomeScreen extends StatelessWidget {
   final NavigateCallback onNavigate;
   final bool isLoggedIn;
 
-  const HomeScreen({Key? key, required this.onNavigate, required this.isLoggedIn}) : super(key: key);
+  const HomeScreen({
+    Key? key,
+    required this.onNavigate,
+    required this.isLoggedIn,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +22,7 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // ► Banner Slider
             SizedBox(
               height: 180,
               child: PageView(
@@ -39,23 +44,31 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // ► Kategori Chip’leri
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: ['Sedan', 'SUV', 'Elektrikli', 'Hatchback']
-                    .map((cat) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ActionChip(
-                            label: Text(cat),
-                            onPressed: () => onNavigate('Araçlar'),
-                            backgroundColor: Colors.blue.shade100,
-                          ),
-                        ))
+                    .map(
+                      (cat) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(cat),
+                          onPressed: () => onNavigate('Araçlar'),
+                          backgroundColor: Colors.blue.shade100,
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // ► Başlık: Öne Çıkanlar
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -63,7 +76,10 @@ class HomeScreen extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // ► Öne çıkan araçlar listesi
             SizedBox(
               height: 140,
               child: ListView.separated(
@@ -90,7 +106,10 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.directions_car, size: 48, color: Colors.blue),
                         const SizedBox(height: 8),
-                        Text('Araç ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Araç ${index + 1}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),

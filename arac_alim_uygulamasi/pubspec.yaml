@@ -23,14 +23,14 @@ dependencies:
   flutter_local_notifications: ^19.2.1
 
   battery_plus: ^6.2.1
-  flutter_secure_storage: ^9.0.0
 
   # Core icon pack
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.2
 
   # State management
-  flutter_riverpod: ^2.0.0
+  flutter_riverpod: ^2.3.6
+  flutter_secure_storage: ^9.0.0
 
   # SVG desteği
   flutter_svg: ^2.1.0

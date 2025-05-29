@@ -1,51 +1,69 @@
-// File: lib/ui/screens/add_sale_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_provider.dart';
 import 'screen_template.dart';
 
-class AddSaleScreen extends StatelessWidget {
-  final NavigateCallback onNavigate;
+class AddSaleScreen extends ConsumerStatefulWidget {
+  final void Function(String) onNavigate;
   final bool isLoggedIn;
 
-  const AddSaleScreen({Key? key, required this.onNavigate, required this.isLoggedIn}) : super(key: key);
+  const AddSaleScreen({
+    Key? key,
+    required this.onNavigate,
+    required this.isLoggedIn,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<AddSaleScreen> createState() => _AddSaleScreenState();
+}
+
+class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
+    if (authState.status != AuthStatus.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => widget.onNavigate('Login'));
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     return AppScaffold(
-      title: 'Satışa Araç Ekle',
-      onNavigate: onNavigate,
-      isLoggedIn: isLoggedIn,
+      title: 'İlan Ver',
+      onNavigate: widget.onNavigate,
+      isLoggedIn: widget.isLoggedIn,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
           child: Column(
             children: [
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Araç Başlığı',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
+              TextFormField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'Başlık')),
               const SizedBox(height: 16),
-              TextField(
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Açıklama',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
+              TextFormField(
+                controller: _priceCtrl,
+                decoration: const InputDecoration(labelText: 'Fiyat'),
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Fiyat',
-                  prefixText: '₺ ',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => onNavigate('Profil'),
-                child: const Text('Kaydet ve Profili Gör'),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // Kayıt işlemi vs.
+                    widget.onNavigate('Profil');
+                  }
+                },
+                child: const Text('Kaydet'),
               ),
             ],
           ),

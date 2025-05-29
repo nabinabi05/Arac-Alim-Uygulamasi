@@ -10,35 +10,35 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  timezone: ^0.8.0
+
   workmanager: ^0.5.0
-  connectivity_plus: ^5.0.2
+  timezone: ^0.10.1
   
-  path_provider: ^2.1.2
-  sqflite: ^2.3.0
+  path_provider: ^2.1.5
+  sqflite: ^2.4.2
   path: ^1.8.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  http: ^1.2.1
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.1.4
   flutter_local_notifications: ^19.2.1
 
-  battery_plus: ^4.0.2
-  flutter_secure_storage: ^9.0.0
+  battery_plus: ^6.2.1
 
   # Core icon pack
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.2
 
   # State management
-  flutter_riverpod: ^2.0.0
+  http: ^1.4.0
+  flutter_riverpod: ^2.3.6
+  flutter_secure_storage: ^9.0.0
 
   # SVG desteği
-  flutter_svg: ^1.1.6
+  flutter_svg: ^2.1.0
 
-  sensors_plus: ^2.0.0
-  location: ^4.4.0
+  sensors_plus: ^6.1.1
+  location: ^8.0.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

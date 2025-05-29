@@ -4,7 +4,7 @@ import '../../services/auth_provider.dart';
 import 'screen_template.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  final void Function(String) onNavigate;
+  final NavigateCallback onNavigate;
   final bool isLoggedIn;
 
   const LoginScreen({
@@ -14,56 +14,62 @@ class LoginScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() =>
+      _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState
+    extends ConsumerState<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  bool _loading = false;
 
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passCtrl.dispose();
-    super.dispose();
+  Future<void> _login() async {
+    setState(() => _loading = true);
+    await ref
+        .read(authProvider.notifier)
+        .login(_emailCtrl.text, _passCtrl.text);
+    setState(() => _loading = false);
+
+    final st = ref.read(authProvider);
+    if (st.status == AuthStatus.authenticated) {
+      widget.onNavigate('Home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text(st.error ?? 'Giriş başarısız')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
-    // Başarılı login sonrası otomatik yönlendir
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (authState.status == AuthStatus.authenticated) {
-        widget.onNavigate('Anasayfa');
-      }
-    });
-
-    return AppScaffold(
-      title: 'Giriş Yap',
+    return ScreenTemplate(
       onNavigate: widget.onNavigate,
       isLoggedIn: widget.isLoggedIn,
-      body: Padding(
+      child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
-            const SizedBox(height: 16),
-            TextField(controller: _passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'Şifre')),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: authState.status == AuthStatus.loading
-                  ? null
-                  : () => ref.read(authProvider.notifier).login(_emailCtrl.text, _passCtrl.text),
-              child: Text(authState.status == AuthStatus.loading ? 'Bekleyiniz…' : 'Giriş Yap'),
+            TextField(
+              controller: _emailCtrl,
+              decoration:
+                  const InputDecoration(labelText: 'Email'),
             ),
-            if (authState.status == AuthStatus.error)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(authState.error!, style: const TextStyle(color: Colors.red)),
-              ),
-            const SizedBox(height: 16),
-            TextButton(onPressed: () => widget.onNavigate('SignUp'), child: const Text('Kayıt Ol')),
+            TextField(
+              controller: _passCtrl,
+              decoration:
+                  const InputDecoration(labelText: 'Şifre'),
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
+            _loading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    child: const Text('Giriş Yap'),
+                  ),
           ],
         ),
       ),

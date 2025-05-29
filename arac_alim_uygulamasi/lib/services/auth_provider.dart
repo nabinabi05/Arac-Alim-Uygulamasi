@@ -1,56 +1,59 @@
-// File: lib/services/auth_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'auth_service.dart';
+import 'auth_repository.dart';
 
-/// Yetkilendirme durumları
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthState {
   final AuthStatus status;
   final String? error;
-  AuthState({required this.status, this.error});
+  AuthState(this.status, [this.error]);
+  @override
+  String toString() => 'AuthState($status, err=$error)';
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(AuthState(status: AuthStatus.initial));
+  final AuthRepository _repo = AuthRepository();
 
-  /// Giriş akışı: AuthService.login hem API isteğini yapar hem token'ı güvenli şekilde saklar.
-  Future<void> login(String email, String password) async {
-    state = AuthState(status: AuthStatus.loading);
+  AuthNotifier() : super(AuthState(AuthStatus.initial)) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    state = AuthState(AuthStatus.loading);
     try {
-      final success = await AuthService.login(email, password);
-      if (success) {
-        state = AuthState(status: AuthStatus.authenticated);
-      } else {
-        state = AuthState(status: AuthStatus.error, error: 'Giriş başarısız.');
-      }
+      final ok = await _repo.isLoggedIn();
+      state = AuthState(ok ? AuthStatus.authenticated : AuthStatus.unauthenticated);
     } catch (e) {
-      state = AuthState(status: AuthStatus.error, error: e.toString());
+      state = AuthState(AuthStatus.error, e.toString());
     }
   }
 
-  /// Kayıt akışı: yalnızca API çağrısı, token saklama login adımında olacak
   Future<void> register(String email, String password) async {
-    state = AuthState(status: AuthStatus.loading);
+    state = AuthState(AuthStatus.loading);
     try {
-      final success = await AuthService.register(email, password);
-      if (success) {
-        state = AuthState(status: AuthStatus.unauthenticated);
-      } else {
-        state = AuthState(status: AuthStatus.error, error: 'Kayıt başarısız.');
-      }
+      final success = await _repo.register(email, password);
+      state = AuthState(success ? AuthStatus.authenticated : AuthStatus.unauthenticated);
     } catch (e) {
-      state = AuthState(status: AuthStatus.error, error: e.toString());
+      state = AuthState(AuthStatus.error, e.toString());
     }
   }
 
-  /// Çıkış akışı: AuthService.logout token'ı siler
+  Future<void> login(String email, String password) async {
+    state = AuthState(AuthStatus.loading);
+    try {
+      final success = await _repo.login(email, password);
+      state = AuthState(success ? AuthStatus.authenticated : AuthStatus.unauthenticated);
+    } catch (e) {
+      state = AuthState(AuthStatus.error, e.toString());
+    }
+  }
+
   Future<void> logout() async {
-    await AuthService.logout();
-    state = AuthState(status: AuthStatus.unauthenticated);
+    await _repo.logout();
+    state = AuthState(AuthStatus.unauthenticated);
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(),
-);
+/// Riverpod provider for your AuthNotifier
+final authProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());

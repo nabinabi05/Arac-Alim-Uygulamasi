@@ -1,74 +1,65 @@
+// lib/ui/screens/screen_template.dart
+
 import 'package:flutter/material.dart';
 
-/// Signature for navigating between pages.
-typedef NavigateCallback = void Function(String page, [String id]);
-
-/// A common Scaffold with drawer, AppBar and FAB.
 class ScreenTemplate extends StatelessWidget {
-  final NavigateCallback onNavigate;
-  final bool isLoggedIn;
-  final Widget child;
+  final String title;
+  final int currentIndex;
+  final Widget body;
 
   const ScreenTemplate({
-    Key? key,
-    required this.onNavigate,
-    required this.isLoggedIn,
-    required this.child,
-  }) : super(key: key);
+    super.key,
+    required this.title,
+    required this.currentIndex,
+    required this.body,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('AraçAlım',
-                  style: Theme.of(context).textTheme.headlineSmall),
-            ),
-            ListTile(
-              title: const Text('Anasayfa'),
-              onTap: () => onNavigate('Home'),
-            ),
-            ListTile(
-              title: const Text('Araç Listesi'),
-              onTap: () => onNavigate('List'),
-            ),
-            ListTile(
-              title: const Text('İlan Ver'),
-              onTap: () => onNavigate('AddSale'),
-              enabled: isLoggedIn,
-            ),
-            if (isLoggedIn) ...[
-              ListTile(
-                title: const Text('Profil'),
-                onTap: () => onNavigate('Profile'),
-              ),
-              ListTile(
-                title: const Text('Çıkış Yap'),
-                onTap: () => onNavigate('Logout'),
-              ),
-            ] else ...[
-              ListTile(
-                title: const Text('Giriş Yap'),
-                onTap: () => onNavigate('Login'),
-              ),
-              ListTile(
-                title: const Text('Kayıt Ol'),
-                onTap: () => onNavigate('Signup'),
-              ),
-            ],
-          ],
-        ),
+      body: SafeArea(child: body),
+      bottomNavigationBar: BottomNavigationBar(
+        // → Bu üç satırı ekleyin:
+        backgroundColor: const Color(0xFF0D47A1), // Koyu mavi arkaplan
+        selectedItemColor: Colors.white,          // Seçili ikon/etiket beyaz
+        unselectedItemColor: Colors.white70,      // Seçilmeyenler yarı şeffaf beyaz
+
+        currentIndex: currentIndex,
+        onTap: (i) {
+          switch (i) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/list');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/activity');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Anasayfa',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.directions_car),
+            label: 'İlanlar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Aktivite',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+        ],
       ),
-      appBar: AppBar(title: const Text('AraçAlım')),
-      body: child,
-      floatingActionButton: isLoggedIn
-          ? FloatingActionButton(
-              onPressed: () => onNavigate('AddSale'),
-              child: const Icon(Icons.add),
-            )
-          : null,
     );
   }
 }

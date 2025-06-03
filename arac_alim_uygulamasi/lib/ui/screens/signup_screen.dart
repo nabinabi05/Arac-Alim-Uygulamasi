@@ -1,76 +1,76 @@
+// lib/ui/screens/signup_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/auth_provider.dart';
-import 'screen_template.dart';
+import '../../providers/repositories.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
-  final NavigateCallback onNavigate;
-  final bool isLoggedIn;
-
-  const SignupScreen({
-    Key? key,
-    required this.onNavigate,
-    required this.isLoggedIn,
-  }) : super(key: key);
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<SignupScreen> createState() =>
-      _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState
-    extends ConsumerState<SignupScreen> {
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
+class _SignupScreenState extends ConsumerState<SignupScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late String _email, _password;
   bool _loading = false;
 
-  Future<void> _signup() async {
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
     setState(() => _loading = true);
-    await ref
-        .read(authProvider.notifier)
-        .register(_emailCtrl.text, _passCtrl.text);
-    setState(() => _loading = false);
 
-    final st = ref.read(authProvider);
-    if (st.status == AuthStatus.authenticated) {
-      widget.onNavigate('Home');
-    } else {
+    final auth = ref.read(authRepoProvider);
+    try {
+      await auth.register(_email.trim(), _password.trim());
+      if (mounted) {
+        Navigator.pop(context); // Kayıt olunca giriş ekranına geri dön
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(st.error ?? 'Kayıt başarısız')),
+        SnackBar(content: Text('Kayıt hatası: $e')),
       );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScreenTemplate(
-      onNavigate: widget.onNavigate,
-      isLoggedIn: widget.isLoggedIn,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Email'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Kayıt Ol')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'E-posta'),
+                  keyboardType: TextInputType.emailAddress,
+                  onSaved: (v) => _email = v ?? '',
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Şifre'),
+                  obscureText: true,
+                  onSaved: (v) => _password = v ?? '',
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  child: _loading
+                      ? const CircularProgressIndicator()
+                      : const Text('Kayıt Ol'),
+                ),
+              ],
             ),
-            TextField(
-              controller: _passCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Şifre'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            _loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _signup,
-                    child: const Text('Kayıt Ol'),
-                  ),
-          ],
+          ),
         ),
       ),
     );

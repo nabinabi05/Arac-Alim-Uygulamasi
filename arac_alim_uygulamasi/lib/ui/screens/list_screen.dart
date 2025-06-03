@@ -1,49 +1,54 @@
+// lib/ui/screens/list_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/car.dart';
-import '../../services/car_repository.dart';
+import '../../providers/repositories.dart';
 import 'screen_template.dart';
+import 'detail_screen.dart';
 
-class ListScreen extends StatelessWidget {
-  final NavigateCallback onNavigate;
-  final bool isLoggedIn;
-
-  const ListScreen({
-    Key? key,
-    required this.onNavigate,
-    required this.isLoggedIn,
-  }) : super(key: key);
+class ListScreen extends ConsumerWidget {
+  const ListScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repo = ref.watch(carRepoProvider);
+
     return ScreenTemplate(
-      onNavigate: onNavigate,
-      isLoggedIn: isLoggedIn,
-      child: FutureBuilder<List<Car>>(
-        future: CarRepository().getCars(),
+      title: 'İlanlar',
+      currentIndex: 1,
+      body: FutureBuilder<List<Car>>(
+        future: repo.fetchAll(),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (snap.hasError) {
-            return Center(
-                child: Text('Hata: ${snap.error}'));
+            return Center(child: Text('Hata: ${snap.error}'));
           }
           final cars = snap.data ?? [];
           if (cars.isEmpty) {
-            return const Center(child: Text('Henüz araç yok.'));
+            return const Center(child: Text('Henüz ilan yok'));
           }
           return ListView.builder(
+            padding: const EdgeInsets.all(8),
             itemCount: cars.length,
-            itemBuilder: (ctx, i) {
-              final c = cars[i];
-              return ListTile(
-                title: Text('${c.brand} ${c.modelName}'),
-                subtitle: Text('${c.year} — ${c.price} TL'),
-                onTap: () =>
-                    onNavigate('Detail', c.id.toString()),
-              );
-            },
+            itemBuilder: (_, i) => Card(
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              child: ListTile(
+                leading: const Icon(Icons.directions_car),
+                title: Text('${cars[i].brand} ${cars[i].modelName}'),
+                subtitle: Text(
+                    '${cars[i].year} • ₺${cars[i].price.toStringAsFixed(0)}'),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/detail',
+                    arguments: cars[i].id.toString(),
+                  );
+                },
+              ),
+            ),
           );
         },
       ),

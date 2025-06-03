@@ -1,76 +1,84 @@
+// lib/ui/screens/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/auth_provider.dart';
-import 'screen_template.dart';
+import '../../providers/repositories.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  final NavigateCallback onNavigate;
-  final bool isLoggedIn;
-
-  const LoginScreen({
-    Key? key,
-    required this.onNavigate,
-    required this.isLoggedIn,
-  }) : super(key: key);
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<LoginScreen> createState() =>
-      _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState
-    extends ConsumerState<LoginScreen> {
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late String _email, _password;
   bool _loading = false;
 
-  Future<void> _login() async {
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
     setState(() => _loading = true);
-    await ref
-        .read(authProvider.notifier)
-        .login(_emailCtrl.text, _passCtrl.text);
-    setState(() => _loading = false);
 
-    final st = ref.read(authProvider);
-    if (st.status == AuthStatus.authenticated) {
-      widget.onNavigate('Home');
-    } else {
+    final auth = ref.read(authRepoProvider);
+    try {
+      await auth.login(_email.trim(), _password.trim());
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(st.error ?? 'Giriş başarısız')),
+        SnackBar(content: Text('Giriş hatası: $e')),
       );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScreenTemplate(
-      onNavigate: widget.onNavigate,
-      isLoggedIn: widget.isLoggedIn,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Email'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Giriş')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'E-posta'),
+                  keyboardType: TextInputType.emailAddress,
+                  onSaved: (v) => _email = v ?? '',
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Şifre'),
+                  obscureText: true,
+                  onSaved: (v) => _password = v ?? '',
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  child: _loading
+                      ? const CircularProgressIndicator()
+                      : const Text('Giriş Yap'),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/signup');
+                  },
+                  child: const Text('Hesabın yok mu? Kayıt ol'),
+                ),
+              ],
             ),
-            TextField(
-              controller: _passCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Şifre'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            _loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Giriş Yap'),
-                  ),
-          ],
+          ),
         ),
       ),
     );

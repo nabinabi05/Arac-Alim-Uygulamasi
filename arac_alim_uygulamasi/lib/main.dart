@@ -8,8 +8,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'providers/theme_notifier.dart';
+import 'providers/language_notifier.dart';
 import 'providers/database_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'data/database.dart';
@@ -22,10 +26,8 @@ import 'ui/screens/login_screen.dart';
 import 'ui/screens/signup_screen.dart';
 import 'ui/screens/activity_screen.dart';
 
-/// Arka planda favori ilanların fiyatını kontrol eden task adı
 const String fetchPricesTask = "fetchPricesTask";
 
-/// WorkManager callback fonksiyonu (arka plan tetikleyici)
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     switch (taskName) {
@@ -37,15 +39,10 @@ void callbackDispatcher() {
   });
 }
 
-/// Arka planda favori ilanları kontrol eden fonksiyon
 Future<void> _checkFavoritePrices() async {
   WidgetsFlutterBinding.ensureInitialized();
   final db = AppDatabase();
-  final favoritesDao = db.favoritesDao;
   final prefs = await SharedPreferences.getInstance();
-
-  // Eski: final favList = await favoritesDao.getAllFavorites();
-  // Yeni: Tüm favori satırlarını direkt tablo üzerinden çekiyoruz
   final favList = await db.select(db.favorites).get();
   if (favList.isEmpty) {
     await db.close();
@@ -92,11 +89,9 @@ Future<void> _checkFavoritePrices() async {
   await db.close();
 }
 
-/// Flutter Local Notifications plugin örneği
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// Fiyat değiştiğinde bildirim göstermek için fonksiyon
 Future<void> _showPriceChangeNotification(
     int carId, double oldPrice, double newPrice) async {
   const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -128,10 +123,9 @@ Future<void> _showPriceChangeNotification(
   );
 }
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // WorkManager’ı başlatıyoruz
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: false,
@@ -145,31 +139,23 @@ void main() {
   );
 
   runApp(
-    // Riverpod ProviderScope başlatılıyor
     ProviderScope(
-      child: const AppWithConnectivity(),
+      child: const AppWithConnectivityAndBattery(),
     ),
   );
 }
 
-/// Uygulamanın kök widget’ı.
-/// ConnectivityOverlay, MaterialApp’in builder’ında konumlandırıldığı için
-/// hangi sayfa açıksa o sayfanın üzerine internet durumu SnackBar’ı gösterir.
-class AppWithConnectivity extends ConsumerWidget {
-  const AppWithConnectivity({super.key});
+class AppWithConnectivityAndBattery extends ConsumerWidget {
+  const AppWithConnectivityAndBattery({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
-      title: 'AraçAlım',
-      debugShowCheckedModeBanner: false,
+    final themeMode = ref.watch(themeNotifierProvider);
+    final locale = ref.watch(languageNotifierProvider);
 
-      /// Burada önemli kısım: MaterialApp.builder
-      builder: (context, child) {
-        // child, routing ile seçilen herhangi bir ekran (Login, Home, vs)
-        // Üzerine ConnectivityOverlay sarıyoruz:
-        return ConnectivityOverlay(child: child!);
-      },
+    return MaterialApp(
+      title: '',
+      debugShowCheckedModeBanner: false,
 
       theme: ThemeData(
         brightness: Brightness.light,
@@ -203,7 +189,16 @@ class AppWithConnectivity extends ConsumerWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      themeMode: ref.watch(themeNotifierProvider),
+      themeMode: themeMode,
+
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
 
       initialRoute: '/login',
       routes: {
@@ -219,11 +214,79 @@ class AppWithConnectivity extends ConsumerWidget {
         '/activity': (_) => const ActivityScreen(),
         '/profile': (_) => const ProfileScreen(),
       },
+
+      builder: (context, child) {
+        return BatteryOverlay(
+          child: ConnectivityOverlay(child: child!),
+        );
+      },
     );
   }
 }
 
-/// **Burada “ConnectivityOverlay” sınıfını tamamen yeniledik:**
+class BatteryOverlay extends StatefulWidget {
+  final Widget child;
+  const BatteryOverlay({required this.child, super.key});
+
+  @override
+  State<BatteryOverlay> createState() => _BatteryOverlayState();
+}
+
+class _BatteryOverlayState extends State<BatteryOverlay>
+    with WidgetsBindingObserver {
+  final _battery = Battery();
+  bool _hasNotified = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkBatteryLevel();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkBatteryLevel();
+    }
+  }
+
+  Future<void> _checkBatteryLevel() async {
+    try {
+      final level = await _battery.batteryLevel;
+      if (level <= 20 && !_hasNotified) {
+        _hasNotified = true;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.batteryLowMessage(level),
+              ),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } else if (level > 20) {
+        _hasNotified = false;
+      }
+    } catch (_) {
+      // Sessizce geç
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+}
+
 class ConnectivityOverlay extends ConsumerWidget {
   final Widget child;
   const ConnectivityOverlay({required this.child, super.key});
@@ -233,41 +296,37 @@ class ConnectivityOverlay extends ConsumerWidget {
     ref.listen<AsyncValue<ConnectivityResult>>(
       connectivityStatusProvider,
       (previous, next) {
-        // Henüz veri gelmiyorsa veya hata varsa hiçbir şey yapma
         if (next.isLoading || next.hasError) return;
 
-        final currentStatus = next.value!;       // Şimdiki bağlantı durumu
-        final previousStatus = previous?.value;  // Önceki bağlantı durumu (null olabilir)
+        final currentStatus = next.value!;
+        final previousStatus = previous?.value;
 
-        // 1) Offline → Online geçişi
         if (previousStatus == ConnectivityResult.none &&
             (currentStatus == ConnectivityResult.wifi ||
-             currentStatus == ConnectivityResult.mobile)) {
+                currentStatus == ConnectivityResult.mobile)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('İnternet bağlantısı geri geldi'),
+            SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.backOnlineMessage),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
-        }
-        // 2) Online → Offline geçişi
-        else if ((previousStatus == ConnectivityResult.wifi ||
-                  previousStatus == ConnectivityResult.mobile) &&
-                 currentStatus == ConnectivityResult.none) {
+        } else if ((previousStatus == ConnectivityResult.wifi ||
+                previousStatus == ConnectivityResult.mobile) &&
+            currentStatus == ConnectivityResult.none) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('İnternet bağlantısı kesildi'),
+            SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.wentOfflineMessage),
               backgroundColor: Colors.redAccent,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
-        // 3) İlk açılışta previousStatus null olduğu için hiçbir snackbar gösterilmez.
       },
     );
 
-    // Her zaman child (aktuel ekran) döndürülür.
     return child;
   }
 }

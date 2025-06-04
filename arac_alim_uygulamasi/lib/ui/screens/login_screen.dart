@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/repositories.dart';
 import 'signup_screen.dart';
 
@@ -18,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _loading = false;
 
   Future<void> _submit() async {
+    final loc = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
     setState(() => _loading = true);
@@ -30,7 +32,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Giriş hatası: $e')),
+        SnackBar(content: Text('${loc.loginError} $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -39,8 +41,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Giriş')),
+      appBar: AppBar(title: Text(loc.loginTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -49,32 +52,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: ListView(
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'E-posta'),
+                  decoration: InputDecoration(labelText: loc.emailLabel),
                   keyboardType: TextInputType.emailAddress,
                   onSaved: (v) => _email = v ?? '',
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                      (v == null || v.isEmpty) ? loc.requiredField : null,
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Şifre'),
+                  decoration: InputDecoration(labelText: loc.passwordLabel),
                   obscureText: true,
                   onSaved: (v) => _password = v ?? '',
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Zorunlu' : null,
+                      (v == null || v.isEmpty) ? loc.requiredField : null,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _loading ? null : _submit,
                   child: _loading
                       ? const CircularProgressIndicator()
-                      : const Text('Giriş Yap'),
+                      : Text(loc.loginButton),
                 ),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/signup');
                   },
-                  child: const Text('Hesabın yok mu? Kayıt ol'),
+                  child: Text(loc.signUpPrompt),
                 ),
               ],
             ),

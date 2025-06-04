@@ -1,6 +1,7 @@
 // lib/ui/screens/screen_template.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ScreenTemplate extends StatelessWidget {
   final String title;
@@ -16,14 +17,14 @@ class ScreenTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: SafeArea(child: body),
       bottomNavigationBar: BottomNavigationBar(
-        // → Bu üç satırı ekleyin:
-        backgroundColor: const Color(0xFF0D47A1), // Koyu mavi arkaplan
-        selectedItemColor: Colors.white,          // Seçili ikon/etiket beyaz
-        unselectedItemColor: Colors.white70,      // Seçilmeyenler yarı şeffaf beyaz
-
+        backgroundColor: const Color(0xFF0D47A1),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
         currentIndex: currentIndex,
         onTap: (i) {
           switch (i) {
@@ -41,22 +42,22 @@ class ScreenTemplate extends StatelessWidget {
               break;
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Anasayfa',
+            icon: const Icon(Icons.home),
+            label: loc.homeTitle,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: 'İlanlar',
+            icon: const Icon(Icons.directions_car),
+            label: loc.listingsTitle,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Aktivite',
+            icon: const Icon(Icons.notifications),
+            label: loc.activityHistory,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
+            icon: const Icon(Icons.person),
+            label: loc.screenProfile,
           ),
         ],
       ),

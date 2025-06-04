@@ -1,0 +1,110 @@
+{
+  "@@locale": "tr",
+
+  "appTitle": "AraçAlım",
+  "homeTitle": "Anasayfa",
+  "welcomeMessage": "Hoş geldiniz!",
+  "viewCarsButton": "Araçları Görüntüle",
+  "createListingButton": "İlan Ver",
+  "listingsTitle": "İlanlar",
+  "noListings": "Henüz ilan yok",
+  "error": "Hata:",
+  "activityHistory": "Aktivite Geçmişi",
+  "noActivity": "Gösterilecek aktivite yok.",
+  "screenProfile": "Profil",
+  "welcomeUser": "Hoş geldiniz!",
+  "switchDarkTheme": "Karanlık Tema",
+  "switchLanguage": "Dil",
+  "english": "English",
+  "turkish": "Türkçe",
+  "logout": "Çıkış Yap",
+  "favoriteCars": "Favori İlanlar",
+  "loginToViewFavorites": "Favori ilanlarınızı görmek için giriş yapın.",
+  "noFavoritesYet": "Henüz favori ilanınız yok.",
+  "listingNotFound": "Bu ilan silinmiş veya artık mevcut değil.",
+  "pricePrefix": "Fiyat:",
+
+  "detailScreenTitle": "İlan Detayı",
+  "yearPrefix": "Yıl:",
+  "descriptionHeading": "Açıklama:",
+  "loadingLocation": "Konum alınıyor...",
+  "pleaseLoginToFavorite": "Favori eklemek için giriş yapın.",
+  "removeFavorite": "Favoriden Çıkar",
+  "addFavorite": "Favoriye Ekle",
+  "goToFavorites": "Favorilere Git",
+  "editPrice": "Fiyatı Düzenle",
+  "updatePriceTitle": "Fiyat Güncelle",
+  "newPriceLabel": "Yeni fiyat (₺)",
+  "cancel": "İptal",
+  "save": "Kaydet",
+  "priceUpdated": "Fiyat güncellendi!",
+  "deleteListing": "Sil",
+  "deleteListingTitle": "İlanı Sil",
+  "deleteListingConfirm": "Bu ilanı silmek istediğine emin misin?",
+  "delete": "Sil",
+  "listingDeleted": "İlan silindi.",
+
+  "createListing": "İlan Oluştur",
+  "locationPermissionDenied": "Konum izni verilmedi! Lütfen ayarlardan izin verin.",
+  "requestPermission": "İzin İste",
+  "locationNotReady": "Konum henüz alınamadı. Lütfen bekleyin.",
+  "coordinatesFormat": "Konum: ({latitude}, {longitude})",
+  "@coordinatesFormat": {
+    "placeholders": {
+      "latitude": {},
+      "longitude": {}
+    }
+  },
+  "brandLabel": "Marka",
+  "brandRequired": "Marka gerekli.",
+  "modelLabel": "Model",
+  "modelRequired": "Model gerekli.",
+  "yearLabel": "Yıl",
+  "yearRequired": "Yıl gerekli.",
+  "invalidYear": "Geçersiz yıl.",
+  "priceLabel": "Fiyat (₺)",
+  "priceRequired": "Fiyat gerekli.",
+  "invalidPrice": "Geçersiz fiyat.",
+  "descriptionLabel": "Açıklama",
+  "saveButton": "Kaydet",
+  "listingSuccess": "İlan başarıyla oluşturuldu.",
+  "listingError": "Kaydetme hatası:",
+  "unexpectedError": "Beklenmeyen hata:",
+
+  "loginTitle": "Giriş",
+  "emailLabel": "E-posta",
+  "passwordLabel": "Şifre",
+  "requiredField": "Zorunlu",
+  "loginButton": "Giriş Yap",
+  "signUpPrompt": "Hesabın yok mu? Kayıt ol",
+  "loginError": "Giriş hatası:",
+  "signupTitle": "Kayıt Ol",
+  "signupButton": "Kayıt Ol",
+  "signupError": "Kayıt hatası:",
+
+  "backOnlineMessage": "İnternet bağlantısı geri geldi",
+  "wentOfflineMessage": "İnternet bağlantısı kesildi",
+
+  "batteryLowMessage": "Pil seviyesi düşük: {level}%",
+  "@batteryLowMessage": {
+    "placeholders": {
+      "level": {}
+    }
+  },
+
+  "fillAiFields": "Lütfen marka, model ve yılı doldurun.",
+  "getAiPrice": "Tahmini Fiyat Al",
+  "aiPriceFetched": "Tahmini fiyat: {price}₺",
+  "@aiPriceFetched": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "aiError": "Yapay zeka hatası:",
+  "predictedPriceTitle": "Tahmini Fiyat",
+  "predictedPriceContent": "Tahmini fiyat {price} ₺. Bu fiyatı kullanmak ister misiniz?",
+  "ignoreButton": "Yoksay",
+  "usePriceButton": "Fiyatı Kullan",
+  "saveButton": "Kaydet",
+  "fillAllFields": "Lütfen tüm alanları doldurun."
+}

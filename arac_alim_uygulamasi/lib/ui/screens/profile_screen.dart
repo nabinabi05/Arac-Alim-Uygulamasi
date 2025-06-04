@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../providers/repositories.dart';       // authRepoProvider
 import '../../providers/database_provider.dart';  // favoritesDaoProvider
-import '../../data/database.dart';                // Favorite, Car modelleri
+import '../../data/database.dart';                // Favorite modeli
 import '../../providers/theme_notifier.dart';     // Tema değişimi
+import '../../providers/language_notifier.dart';  // Dil değişimi
 import '../../models/car.dart';
 import 'screen_template.dart';
 
@@ -15,15 +17,23 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final authRepo = ref.watch(authRepoProvider);
+
+    // Tema kontrolü
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     final isDarkMode = ref.watch(themeNotifierProvider) == ThemeMode.dark;
+
+    // Dil kontrolü
+    final languageNotifier = ref.read(languageNotifierProvider.notifier);
+    final currentLocale = ref.watch(languageNotifierProvider);
+    final isEnglish = currentLocale.languageCode == 'en';
 
     final favoritesDao = ref.watch(favoritesDaoProvider);
     final carRepo = ref.watch(carRepoProvider);
 
     return ScreenTemplate(
-      title: 'Profil',
+      title: loc.screenProfile,
       currentIndex: 3,
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -36,17 +46,31 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const Center(
-              child: Text('Hoş geldiniz!', style: TextStyle(fontSize: 18)),
+            Center(
+              child: Text(
+                loc.welcomeUser,
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
             const SizedBox(height: 16),
 
             // Tema geçişi
             SwitchListTile(
-              title: const Text('Karanlık Tema'),
+              title: Text(loc.switchDarkTheme),
               value: isDarkMode,
               onChanged: (value) {
                 themeNotifier.toggleTheme();
+              },
+            ),
+            const Divider(thickness: 1, height: 32),
+
+            // Dil geçişi
+            SwitchListTile(
+              title: Text(loc.switchLanguage),
+              subtitle: Text(isEnglish ? loc.english : loc.turkish),
+              value: isEnglish,
+              onChanged: (value) {
+                languageNotifier.setLanguage(value ? 'en' : 'tr');
               },
             ),
             const Divider(thickness: 1, height: 32),
@@ -60,20 +84,18 @@ class ProfileScreen extends ConsumerWidget {
                 }
               },
               icon: const Icon(Icons.logout),
-              label: const Text('Çıkış Yap'),
+              label: Text(loc.logout),
             ),
             const SizedBox(height: 32),
 
-            const Text(
-              'Favori İlanlar',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              loc.favoriteCars,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
             // ---------------------- Favori Listeleme Bölümü ----------------------
-
             FutureBuilder<int?>(
-              // 1) Önce “currentUserId” çekelim
               future: authRepo.getCurrentUserId(),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState != ConnectionState.done) {
@@ -81,10 +103,9 @@ class ProfileScreen extends ConsumerWidget {
                 }
                 final currentUserId = userSnapshot.data;
                 if (currentUserId == null) {
-                  return const Center(child: Text('Favori ilanlarınızı görmek için giriş yapın.'));
+                  return Center(child: Text(loc.loginToViewFavorites));
                 }
 
-                // 2) Bu userId ile favori listesini çek
                 return FutureBuilder<List<Favorite>>(
                   future: favoritesDao.getAllFavoritesByUser(currentUserId),
                   builder: (context, favSnapshot) {
@@ -92,12 +113,14 @@ class ProfileScreen extends ConsumerWidget {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (favSnapshot.hasError) {
-                      return Center(child: Text('Hata: ${favSnapshot.error}'));
+                      return Center(
+                        child: Text('${loc.error} ${favSnapshot.error}'),
+                      );
                     }
 
                     final favList = favSnapshot.data ?? [];
                     if (favList.isEmpty) {
-                      return const Center(child: Text('Henüz favori ilanınız yok.'));
+                      return Center(child: Text(loc.noFavoritesYet));
                     }
 
                     return Expanded(
@@ -110,24 +133,28 @@ class ProfileScreen extends ConsumerWidget {
                           return FutureBuilder<Car>(
                             future: carRepo.fetchById(carId.toString()),
                             builder: (context, carSnapshot) {
-                              if (carSnapshot.connectionState != ConnectionState.done) {
+                              if (carSnapshot.connectionState !=
+                                  ConnectionState.done) {
                                 return const ListTile(
-                                  title: Text('Yükleniyor...'),
+                                  title: Text('...'),
                                 );
                               }
                               if (carSnapshot.hasError) {
                                 final errStr = carSnapshot.error.toString();
                                 if (errStr.contains('404')) {
                                   return ListTile(
-                                    title: const Text(
-                                      'Bu ilan silinmiş veya artık mevcut değil.',
-                                      style: TextStyle(color: Colors.grey),
+                                    title: Text(
+                                      loc.listingNotFound,
+                                      style: const TextStyle(color: Colors.grey),
                                     ),
                                     trailing: IconButton(
                                       icon: const Icon(Icons.delete, color: Colors.red),
                                       onPressed: () async {
-                                        await favoritesDao.removeFavoriteByUserAndCar(
-                                          currentUserId, carId);
+                                        await favoritesDao
+                                            .removeFavoriteByUserAndCar(
+                                          currentUserId,
+                                          carId,
+                                        );
                                         (context as Element).markNeedsBuild();
                                       },
                                     ),
@@ -135,7 +162,7 @@ class ProfileScreen extends ConsumerWidget {
                                 }
                                 return ListTile(
                                   title: Text(
-                                    'Hata: ${carSnapshot.error}',
+                                    '${loc.error} ${carSnapshot.error}',
                                     style: const TextStyle(color: Colors.red),
                                   ),
                                 );
@@ -145,12 +172,15 @@ class ProfileScreen extends ConsumerWidget {
                               return ListTile(
                                 leading: const Icon(Icons.directions_car),
                                 title: Text('${car.brand} ${car.modelName}'),
-                                subtitle: Text('Fiyat: ${car.price.toStringAsFixed(2)} ₺'),
+                                subtitle: Text(
+                                  '${loc.pricePrefix} ${car.price.toStringAsFixed(2)} ₺',
+                                ),
                                 trailing: IconButton(
                                   icon: const Icon(Icons.delete, color: Colors.red),
                                   onPressed: () async {
-                                    await favoritesDao.removeFavoriteByUserAndCar(
-                                        currentUserId, carId);
+                                    await favoritesDao
+                                        .removeFavoriteByUserAndCar(
+                                            currentUserId, carId);
                                     (context as Element).markNeedsBuild();
                                   },
                                 ),

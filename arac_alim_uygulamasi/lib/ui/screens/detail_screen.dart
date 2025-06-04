@@ -2,13 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../models/car.dart';
-import '../../providers/repositories.dart';       // authRepoProvider
+import '../../providers/repositories.dart';       // authRepoProvider, carRepoProvider
 import '../../providers/database_provider.dart';  // favoritesDaoProvider
-import '../../data/database.dart';                // Favorite, Car modeli
+import '../../data/database.dart';                // Favorite modeli
 import 'screen_template.dart';
-import '../../utils/location_utils.dart';         // Şehir/ilçe için fonksiyon
+import '../../utils/location_utils.dart';         // getCityAndDistrict
 
 class DetailScreen extends ConsumerStatefulWidget {
   final String carId;
@@ -23,6 +24,7 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final carRepo = ref.watch(carRepoProvider);
     final favoritesDao = ref.watch(favoritesDaoProvider);
     final authRepo = ref.watch(authRepoProvider);
@@ -37,7 +39,7 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
         }
         if (carSnapshot.hasError) {
           return Scaffold(
-            body: Center(child: Text('Hata: ${carSnapshot.error}')),
+            body: Center(child: Text('${loc.error} ${carSnapshot.error}')),
           );
         }
 
@@ -55,11 +57,10 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
         }
 
         return ScreenTemplate(
-          title: 'İlan Detayı',
+          title: loc.detailScreenTitle,
           currentIndex: 1,
           body: Column(
             children: [
-              // Üstteki detay bilgileri (marka, fiyat, açıklama vb.)…
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -74,25 +75,43 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text('Yıl: ${car.year}', style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text('Fiyat: ${car.price.toStringAsFixed(2)} ₺', style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Açıklama:',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      Text(
+                        '${loc.yearPrefix} ${car.year}',
+                        style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 4),
-                      Text(car.description, style: const TextStyle(fontSize: 16)),
+                      Text(
+                        '${loc.pricePrefix} ${car.price.toStringAsFixed(2)} ₺',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        loc.descriptionHeading,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        car.description,
+                        style: const TextStyle(fontSize: 16),
+                      ),
                       const SizedBox(height: 16),
-                      // Şehir/İlçe
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 20, color: Colors.blueGrey),
+                          const Icon(
+                            Icons.location_on,
+                            size: 20,
+                            color: Colors.blueGrey,
+                          ),
                           const SizedBox(width: 8),
                           Text(
-                            _cityAndDistrict ?? 'Konum alınıyor...',
-                            style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
+                            _cityAndDistrict ?? loc.loadingLocation,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.blueGrey,
+                            ),
                           ),
                         ],
                       ),
@@ -102,34 +121,37 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                 ),
               ),
 
-              // ---------------------- Favori Buton Bölümü ----------------------
-
+              // Favori Buton Bölümü
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: FutureBuilder<int?>(
-                  // 1) Önce currentUserId alalım
                   future: authRepo.getCurrentUserId(),
                   builder: (context, userSnapshot) {
-                    if (userSnapshot.connectionState != ConnectionState.done) {
+                    if (userSnapshot.connectionState !=
+                        ConnectionState.done) {
                       return const SizedBox(
                         height: 48,
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
                     final currentUserId = userSnapshot.data;
-                    // Eğer giriş yapılmamışsa mesaj göster
                     if (currentUserId == null) {
-                      return const Center(child: Text('Favori eklemek için giriş yapın.'));
+                      return Center(
+                          child:
+                              Text(loc.pleaseLoginToFavorite));
                     }
 
-                    // 2) Şimdi bu userId’yi kullanarak “isFavorite” kontrolü yapalım
                     return FutureBuilder<bool>(
-                      future: favoritesDao.isFavorite(currentUserId, car.id),
+                      future: favoritesDao.isFavorite(
+                          currentUserId, car.id),
                       builder: (context, favSnapshot) {
-                        if (favSnapshot.connectionState != ConnectionState.done) {
+                        if (favSnapshot.connectionState !=
+                            ConnectionState.done) {
                           return const SizedBox(
                             height: 48,
-                            child: Center(child: CircularProgressIndicator()),
+                            child:
+                                Center(child: CircularProgressIndicator()),
                           );
                         }
                         final isFav = favSnapshot.data ?? false;
@@ -138,28 +160,33 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                icon: Icon(isFav ? Icons.star : Icons.star_border),
-                                label: Text(isFav ? 'Favoriden Çıkar' : 'Favoriye Ekle'),
+                                icon: Icon(isFav
+                                    ? Icons.star
+                                    : Icons.star_border),
+                                label: Text(isFav
+                                    ? loc.removeFavorite
+                                    : loc.addFavorite),
                                 onPressed: () async {
                                   if (isFav) {
-                                    await favoritesDao.removeFavoriteByUserAndCar(
-                                      currentUserId, car.id);
+                                    await favoritesDao
+                                        .removeFavoriteByUserAndCar(
+                                            currentUserId, car.id);
                                   } else {
                                     await favoritesDao.addFavorite(
-                                      currentUserId, car.id);
+                                        currentUserId, car.id);
                                   }
-                                  // İki FutureBuilder üst üste olduğu için
-                                  // hem userSnapshot hem favSnapshot’ı tazelemek için:
-                                  if (mounted) (context as Element).markNeedsBuild();
+                                  if (mounted) (context as Element)
+                                      .markNeedsBuild();
                                 },
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton(
-                                child: const Text('Favorilere Git'),
+                                child: Text(loc.goToFavorites),
                                 onPressed: () {
-                                  Navigator.pushReplacementNamed(context, '/profile');
+                                  Navigator.pushReplacementNamed(
+                                      context, '/profile');
                                 },
                               ),
                             ),
@@ -171,56 +198,69 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                 ),
               ),
 
-              // -------------------- Sil ve Düzenle Butonları --------------------
-
+              // Sil ve Düzenle Butonları
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.edit),
-                        label: const Text('Fiyatı Düzenle'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                        label: Text(loc.editPrice),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber),
                         onPressed: () async {
-                          final yeniFiyatController = TextEditingController(
+                          final yeniFiyatController =
+                              TextEditingController(
                             text: car.price.toStringAsFixed(2),
                           );
                           final yeniFiyat = await showDialog<double>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text("Fiyat Güncelle"),
+                              title: Text(loc.updatePriceTitle),
                               content: TextField(
                                 controller: yeniFiyatController,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(labelText: "Yeni fiyat (₺)"),
+                                decoration: InputDecoration(
+                                    labelText: loc.newPriceLabel),
                               ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("İptal")),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(ctx, null),
+                                  child: Text(loc.cancel),
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     final val = double.tryParse(
-                                      yeniFiyatController.text.replaceAll(',', '.'),
+                                      yeniFiyatController.text
+                                          .replaceAll(',', '.'),
                                     );
                                     Navigator.pop(ctx, val);
                                   },
-                                  child: const Text("Kaydet"),
+                                  child: Text(loc.save),
                                 ),
                               ],
                             ),
                           );
 
                           if (yeniFiyat != null && yeniFiyat > 0) {
-                            final updatedCar = car.copyWith(price: yeniFiyat);
-                            await carRepo.update(car.id.toString(), updatedCar);
+                            final updatedCar =
+                                car.copyWith(price: yeniFiyat);
+                            await carRepo
+                                .update(car.id.toString(), updatedCar);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Fiyat güncellendi!"),
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text(loc.priceUpdated),
                                   backgroundColor: Colors.amber,
                                 ),
                               );
-                              (context as Element).markNeedsBuild();
+                              (context as Element)
+                                  .markNeedsBuild();
                             }
                           }
                         },
@@ -230,29 +270,47 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.delete),
-                        label: const Text('Sil'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        label: Text(loc.deleteListing),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red),
                         onPressed: () async {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('İlanı Sil'),
-                              content: const Text('Bu ilanı silmek istediğine emin misin?'),
+                              title: Text(loc.deleteListingTitle),
+                              content:
+                                  Text(loc.deleteListingConfirm),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('İptal')),
                                 TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Sil', style: TextStyle(color: Colors.red)),
+                                  onPressed: () =>
+                                      Navigator.pop(ctx, false),
+                                  child: Text(loc.cancel),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(ctx, true),
+                                  child: Text(
+                                    loc.delete,
+                                    style: const TextStyle(
+                                        color: Colors.red),
+                                  ),
                                 ),
                               ],
                             ),
                           );
                           if (confirm == true) {
-                            await carRepo.delete(car.id.toString());
+                            await carRepo
+                                .delete(car.id.toString());
                             if (context.mounted) {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("İlan silindi."), backgroundColor: Colors.red),
+                              // Return `true` to signal deletion to ListScreen
+                              Navigator.pop(context, true);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text(loc.listingDeleted),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           }
@@ -262,7 +320,6 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                   ],
                 ),
               ),
-
             ],
           ),
         );

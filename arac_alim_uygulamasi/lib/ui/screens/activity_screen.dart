@@ -1,9 +1,12 @@
+// lib/ui/screens/activity_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <- Lokalizasyon sınıfı
 import '../../models/activity.dart';
 import '../../providers/repositories.dart';
-import 'package:intl/intl.dart';
-import 'screen_template.dart'; // <-- Burayı ekliyoruz
+import 'screen_template.dart';
 
 IconData getActivityIcon(String? type) {
   switch (type) {
@@ -36,11 +39,13 @@ class ActivityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // activityRepoProvider zaten bir repository döndürecek; fetchAll() da Future<List<Activity>>
+    // Lokalize edilmiş metinleri almak için:
+    final loc = AppLocalizations.of(context)!;
+
     final activityFuture = ref.watch(activityRepoProvider).fetchAll();
 
     return ScreenTemplate(
-      title: 'Aktivite Geçmişi',
+      title: loc.activityHistory, // artık AppLocalizations içinden geliyor
       currentIndex: 2,
       body: FutureBuilder<List<Activity>>(
         future: activityFuture,
@@ -49,19 +54,21 @@ class ActivityScreen extends ConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
+            // "Hata:" metni de arb’den alınıyor
+            return Center(child: Text('${loc.error} ${snapshot.error}'));
           }
 
           final activities = snapshot.data;
           if (activities == null || activities.isEmpty) {
-            return const Center(child: Text('Gösterilecek aktivite yok.'));
+            return Center(child: Text(loc.noActivity));
           }
 
           return ListView.builder(
             itemCount: activities.length,
             itemBuilder: (context, index) {
               final act = activities[index];
-              final type = act.activityType; // nullable olabilir
+              final type = act.activityType;
+
               return ListTile(
                 leading: Icon(
                   getActivityIcon(type),
@@ -69,7 +76,6 @@ class ActivityScreen extends ConsumerWidget {
                 ),
                 title: Text(act.message),
                 subtitle: Text(
-                  // Tarihi kullanıcı yerel saatine çevirip basit gösterim:
                   DateFormat('yyyy-MM-dd HH:mm:ss').format(
                     act.timestamp.toLocal(),
                   ),

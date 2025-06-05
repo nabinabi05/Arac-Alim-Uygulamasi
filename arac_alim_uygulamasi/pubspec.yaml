@@ -1,0 +1,52 @@
+name: arac_alim_uygulamasi
+description: "Car listing & purchase app — UI branch"
+publish_to: 'none' # private package
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Connectivity & Network Checking
+  connectivity_plus: ^6.1.4
+  internet_connection_checker: ^3.0.1
+  flutter_blue_plus: ^1.31.13
+
+  # Background & Scheduling
+  workmanager: ^0.5.0
+  timezone: ^0.10.1
+
+  # Storage & Local Database
+  path_provider: ^2.1.5
+  sqflite: ^2.4.2
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+
+  # Path utilities
+  path: ^1.8.0
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.1.0
+
+  # Networking & State Management
+  http: ^1.4.0
+  flutter_riverpod: ^2.3.6
+
+  # Notifications & Device Info
+  flutter_local_notifications: ^19.2.1
+  battery_plus: ^6.2.1
+  sensors_plus: ^6.1.1
+  location: ^8.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

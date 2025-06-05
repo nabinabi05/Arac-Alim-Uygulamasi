@@ -73,7 +73,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 1. `develop-ui`
+## 1. `develop-ui` (Nabi Nabiyev / 220229078)
 - Hafta 1
   - `ScreenTemplate` bileşeni eklendi.
   - Home, List, Detail, Profile, Login, Signup sayfalarının temel iskeleti oluşturuldu.
@@ -89,7 +89,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 2. `develop-db`
+## 2. `develop-db` (Ahmet Mert Kadıoğlu / 220229064)
 - Hafta 1
   - Drift/SQLite kullanılarak `Car`, `Favorite`, `Activity`, `User` tabloları tanımlandı.
   - `CarDao` ve `FavoritesDao` için temel CRUD metotları yazıldı.
@@ -105,7 +105,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 3. `develop-auth`
+## 3. `develop-auth` (Selçuk Ümit Ateş / 210229034)
 - Hafta 1
   - Django REST’te SimpleJWT tabanlı `/token/` ve `/token/refresh/` endpoint’leri hazırlandı.
   - Flutter’da `AuthRepositoryApi` ile login/logout ve token saklama altyapısı eklendi.
@@ -121,7 +121,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 4. `develop-connectivity`
+## 4. `develop-connectivity` (Ahmet Mert Kadıoğlu / 220229064)
 - Hafta 1
   - `connectivity_plus` entegre edilerek bağlantı durumu dinlenmeye başlandı.
   - Offline durum için SnackBar uyarıları (`ConnectivityListener`) eklendi.
@@ -137,7 +137,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 5. `develop-storage`
+## 5. `develop-storage` (Ahmet Mert Kadıoğlu / 220229064)
 - Hafta 1
   - SharedPreferences ile tema (Light/Dark) ve dil (TR/EN) ayar kaydı eklendi.
   - `ThemeNotifier` ve `LanguageNotifier` provider’ları oluşturuldu.
@@ -153,7 +153,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 6. `develop-cloud`
+## 6. `develop-cloud` (Selçuk Ümit Ateş / 210229034)
 - Hafta 1
   - Firebase/Cloud Storage Flutter paketleri eklendi ve temel yapılandırma yapıldı.
   - Django backend’e medya yükleme (image upload) endpoint’i oluşturuldu.
@@ -169,7 +169,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 7. `develop-sensor`
+## 7. `develop-sensor` (Nabi Nabiyev / 220229078)
 - Hafta 1
   - `geolocator` ile GPS konum bilgisi alma entegre edildi.
   - İlan ekleme formuna “konum ekle” butonu eklendi.
@@ -185,7 +185,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 8. `develop-broadcast`
+## 8. `develop-broadcast` (Utku Mert Çırakoğlu / 240229097)
 - Hafta 1
   - Manifest’e `CONNECTIVITY_CHANGE` ve `BOOT_COMPLETED` BroadcastReceiver tanımlandı.
   - İlk BroadcastReceiver sınıfı eklenerek bağlantı değişikliğinde log tutulmaya başlandı.
@@ -201,7 +201,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 9. `develop-background-task`
+## 9. `develop-background-task` (Utku Mert Çırakoğlu / 240229097)
 - Hafta 1
   - WorkManager entegrasyonu yapıldı; `fetchPricesTask` tanımlandı.
   - Android/iOS izinleri manifest ve Info.plist’e eklendi.
@@ -217,7 +217,7 @@ Bu projede ağ işlemleri için Dio, durum yönetimi için Riverpod, yerel verit
 
 ---
 
-## 10. `develop-rest-api`
+## 10. `develop-rest-api` (Selçuk Ümit Ateş / 210229034)
 - Hafta 1
   - Django REST Framework kurulumu tamamlandı.
   - `CarViewSet`, `FavoriteViewSet`, `ActivityViewSet`, `UserViewSet` oluşturuldu.

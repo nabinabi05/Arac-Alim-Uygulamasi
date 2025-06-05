@@ -1,0 +1,110 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Car Buying App",
+  "homeTitle": "Home",
+  "welcomeMessage": "Welcome!",
+  "viewCarsButton": "View Cars",
+  "createListingButton": "Create Listing",
+  "listingsTitle": "Listings",
+  "noListings": "No listings yet",
+  "error": "Error:",
+  "activityHistory": "Activity History",
+  "noActivity": "No activity to show.",
+  "screenProfile": "Profile",
+  "welcomeUser": "Welcome!",
+  "switchDarkTheme": "Dark Theme",
+  "switchLanguage": "Language",
+  "english": "English",
+  "turkish": "Turkish",
+  "logout": "Logout",
+  "favoriteCars": "Favorite Listings",
+  "loginToViewFavorites": "Please log in to view favorites.",
+  "noFavoritesYet": "No favorites yet.",
+  "listingNotFound": "This listing was deleted or is no longer available.",
+  "pricePrefix": "Price:",
+
+  "detailScreenTitle": "Listing Details",
+  "yearPrefix": "Year:",
+  "descriptionHeading": "Description:",
+  "loadingLocation": "Loading location...",
+  "pleaseLoginToFavorite": "Please log in to favorite.",
+  "removeFavorite": "Remove from Favorites",
+  "addFavorite": "Add to Favorites",
+  "goToFavorites": "Go to Favorites",
+  "editPrice": "Edit Price",
+  "updatePriceTitle": "Update Price",
+  "newPriceLabel": "New Price (₺)",
+  "cancel": "Cancel",
+  "save": "Save",
+  "priceUpdated": "Price updated!",
+  "deleteListing": "Delete",
+  "deleteListingTitle": "Delete Listing",
+  "deleteListingConfirm": "Are you sure you want to delete this listing?",
+  "delete": "Delete",
+  "listingDeleted": "Listing deleted.",
+
+  "createListing": "Create Listing",
+  "locationPermissionDenied": "Location permission not granted! Please enable it in settings.",
+  "requestPermission": "Request Permission",
+  "locationNotReady": "Location not yet available. Please wait.",
+  "coordinatesFormat": "Location: ({latitude}, {longitude})",
+  "@coordinatesFormat": {
+    "placeholders": {
+      "latitude": {},
+      "longitude": {}
+    }
+  },
+  "brandLabel": "Brand",
+  "brandRequired": "Brand is required.",
+  "modelLabel": "Model",
+  "modelRequired": "Model is required.",
+  "yearLabel": "Year",
+  "yearRequired": "Year is required.",
+  "invalidYear": "Invalid year.",
+  "priceLabel": "Price (₺)",
+  "priceRequired": "Price is required.",
+  "invalidPrice": "Invalid price.",
+  "descriptionLabel": "Description",
+  "saveButton": "Save",
+  "listingSuccess": "Listing created successfully.",
+  "listingError": "Save error:",
+  "unexpectedError": "Unexpected error:",
+
+  "loginTitle": "Login",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "requiredField": "Required",
+  "loginButton": "Log In",
+  "signUpPrompt": "Don't have an account? Sign up",
+  "loginError": "Login error:",
+  "signupTitle": "Sign Up",
+  "signupButton": "Sign Up",
+  "signupError": "Sign-up error:",
+
+  "backOnlineMessage": "Internet connection restored",
+  "wentOfflineMessage": "Internet connection lost",
+
+  "batteryLowMessage": "Battery low: {level}%",
+  "@batteryLowMessage": {
+    "placeholders": {
+      "level": {}
+    }
+  },
+
+  "fillAiFields": "Please fill brand, model and year to get AI price.",
+  "getAiPrice": "Get AI Price",
+  "aiPriceFetched": "Predicted price: {price}₺",
+  "@aiPriceFetched": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "aiError": "AI error:",
+  "predictedPriceTitle": "Predicted Price",
+  "predictedPriceContent": "The estimated price is {price} ₺. Do you want to use this?",
+  "ignoreButton": "Ignore",
+  "usePriceButton": "Use Price",
+  "saveButton": "Save",
+  "fillAllFields": "Please fill all fields."
+}

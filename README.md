@@ -5,3 +5,4 @@ Hafta2
 Hafta4 
 API’ye erişmeden önce internet 
 kontrolü tamamlandı.
+Dil tema tercihleri tamamlandı

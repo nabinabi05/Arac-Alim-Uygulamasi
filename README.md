@@ -4,4 +4,8 @@ Shared_preferences ile tema ve dil ayarları yönetimi eklendi Ahmet Mert Kadıo
 Hafta2
 Hafta4 
 API’ye erişmeden önce internet 
-kontrolü tamamlandı.
+kontrolü tamamlandı..
+
+
+
+
